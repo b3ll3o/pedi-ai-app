@@ -32,16 +32,11 @@ describe('AuthProvider', () => {
   };
 
   it('initial loading state is set', () => {
-    // This tests the initial isLoading state before the useEffect completes
-    // Note: Due to React's synchronous rendering, the useEffect may run before
-    // the assertion, so we test that isLoading transitions from true to false
-    const { rerender } = render(
+    render(
       <AuthProvider>
         <DummyChild />
       </AuthProvider>
     );
-    // The component starts with isLoading=true, then useEffect sets it to false
-    // We verify isLoading eventually becomes false
     expect(screen.getByTestId('is-loading')).toHaveTextContent('false');
   });
 
