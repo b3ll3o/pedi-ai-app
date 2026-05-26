@@ -37,8 +37,8 @@ export default function LoginPage() {
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
           <Link href="/" className="inline-flex items-center gap-2 mb-4">
-            <div className="w-10 h-10 rounded-xl bg-secondary flex items-center justify-center">
-              <span className="text-white font-bold text-lg">P</span>
+            <div className="w-10 h-10 rounded-lg bg-primary flex items-center justify-center text-white font-bold text-lg">
+              P
             </div>
             <span className="text-2xl font-bold text-text-primary">Pedi-AI</span>
           </Link>
