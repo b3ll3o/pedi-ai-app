@@ -100,11 +100,17 @@ jobs:
             done
 
             # Configurar Nginx para andreazzi.tech
+            # Limpar qualquer config anterior conflitante
+            sudo rm -f /etc/nginx/sites-available/andreazzi.tech /etc/nginx/sites-enabled/andreazzi.tech 2>/dev/null || true
+
             printf '%s\n' 'server {' '    listen 80;' '    server_name andreazzi.tech;' '' '    location / {' '        proxy_pass http://localhost:3000;' '        proxy_http_version 1.1;' '        proxy_set_header Upgrade $http_upgrade;' '        proxy_set_header Connection '"'"'upgrade'"'"';' '        proxy_set_header Host $host;' '        proxy_set_header X-Real-IP $remote_addr;' '        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;' '        proxy_set_header X-Forwarded-Proto $scheme;' '        proxy_cache_bypass $http_upgrade;' '    }' '}' | sudo tee /etc/nginx/sites-available/andreazzi.tech > /dev/null
 
             sudo ln -sf /etc/nginx/sites-available/andreazzi.tech /etc/nginx/sites-enabled/
-            sudo rm -f /etc/nginx/sites-enabled/default
-            sudo nginx -t && sudo systemctl reload nginx
+            sudo rm -f /etc/nginx/sites-enabled/default 2>/dev/null || true
+
+            # Start nginx se não estiver ativo
+            sudo systemctl start nginx || true
+            sudo nginx -t && sudo systemctl reload nginx || sudo systemctl restart nginx
             echo "Nginx configurado para andreazzi.tech!"
 
             # Verificar logs
