@@ -3,6 +3,48 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001';
 const ACCESS_TOKEN_KEY = 'pedi_auth_access_token';
 const REFRESH_TOKEN_KEY = 'pedi_auth_refresh_token';
 
+let refreshInProgress = false;
+let refreshPromise: Promise<string | null> | null = null;
+
+async function refreshAccessToken(): Promise<string | null> {
+  if (refreshInProgress && refreshPromise) {
+    return refreshPromise;
+  }
+
+  refreshInProgress = true;
+  refreshPromise = (async () => {
+    try {
+      const refreshToken = localStorage.getItem(REFRESH_TOKEN_KEY);
+      if (!refreshToken) {
+        return null;
+      }
+
+      const res = await fetch(`${API_URL}/auth/refresh`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ refreshToken }),
+      });
+
+      if (!res.ok) {
+        localStorage.removeItem(ACCESS_TOKEN_KEY);
+        localStorage.removeItem(REFRESH_TOKEN_KEY);
+        return null;
+      }
+
+      const data = await res.json();
+      localStorage.setItem(ACCESS_TOKEN_KEY, data.accessToken);
+      return data.accessToken;
+    } catch {
+      return null;
+    } finally {
+      refreshInProgress = false;
+      refreshPromise = null;
+    }
+  })();
+
+  return refreshPromise;
+}
+
 export interface Usuario {
   id: string;
   nome: string;
@@ -74,7 +116,7 @@ function getAuthHeaders(): HeadersInit {
   return token ? { Authorization: `Bearer ${token}` } : {};
 }
 
-async function fetchJson<T>(url: string, options?: RequestInit): Promise<T> {
+async function fetchJson<T>(url: string, options?: RequestInit, retryWithRefresh = true): Promise<T> {
   const headers: HeadersInit = {
     'Content-Type': 'application/json',
     ...getAuthHeaders(),
@@ -85,6 +127,29 @@ async function fetchJson<T>(url: string, options?: RequestInit): Promise<T> {
     ...options,
     headers,
   });
+
+  if (res.status === 401 && retryWithRefresh) {
+    const newToken = await refreshAccessToken();
+    if (newToken) {
+      const newHeaders: HeadersInit = {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${newToken}`,
+        ...options?.headers,
+      };
+      const retryRes = await fetch(url, {
+        ...options,
+        headers: newHeaders,
+      });
+      if (!retryRes.ok) {
+        const error = await retryRes.json().catch(() => ({ message: retryRes.statusText }));
+        throw new Error(error.message || `HTTP ${retryRes.status}`);
+      }
+      if (retryRes.status === 204) return undefined as unknown as T;
+      return retryRes.json();
+    }
+    const error = await res.json().catch(() => ({ message: 'Unauthorized' }));
+    throw new Error(error.message || 'Unauthorized');
+  }
 
   if (!res.ok) {
     const error = await res.json().catch(() => ({ message: res.statusText }));
