@@ -4,11 +4,9 @@ on:
   push:
     branches:
       - main
-    paths:
-      - 'pedi-ai-app/**'
   pull_request:
-    paths:
-      - 'pedi-ai-app/**'
+    branches:
+      - main
   workflow_dispatch:
 
 concurrency:
