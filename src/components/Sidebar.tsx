@@ -77,27 +77,27 @@ export function Sidebar() {
                 </li>
               );
             })}
+            <li>
+              <button
+                onClick={handleLogout}
+                className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-gray-300 hover:bg-secondary-light hover:text-white transition-colors"
+              >
+                <LogOut className="w-5 h-5" aria-hidden="true" />
+                <span className="font-medium">Sair</span>
+              </button>
+            </li>
           </ul>
         </nav>
 
         <div className="p-4 border-t border-secondary-light">
-          <div className="flex items-center justify-between px-4 py-3">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-white font-bold">
-                {user?.nome?.charAt(0).toUpperCase() || 'U'}
-              </div>
-              <div>
-                <p className="font-medium text-sm">{user?.nome || 'Usuário'}</p>
-                <p className="text-xs text-gray-400">{user?.email}</p>
-              </div>
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-white font-bold">
+              {user?.nome?.charAt(0).toUpperCase() || 'U'}
             </div>
-            <button
-              onClick={handleLogout}
-              className="p-2 text-gray-400 hover:text-white hover:bg-secondary-light rounded-lg transition-colors"
-              title="Sair"
-            >
-              <LogOut className="w-5 h-5" />
-            </button>
+            <div className="flex-1 min-w-0">
+              <p className="font-medium text-sm truncate">{user?.nome || 'Usuário'}</p>
+              <p className="text-xs text-gray-400 truncate">{user?.email}</p>
+            </div>
           </div>
         </div>
       </aside>
