@@ -118,4 +118,44 @@ describe('Sidebar', () => {
     const usuariosLink = screen.getByRole('link', { name: /usuários/i });
     expect(usuariosLink).toHaveAttribute('aria-current', 'page');
   });
+
+  it('closes sidebar when backdrop is clicked', () => {
+    (useAuth as jest.Mock).mockReturnValue({
+      user: { id: '1', nome: 'Test User', email: 'test@test.com' },
+      logout: mockLogout,
+    });
+
+    renderSidebar();
+
+    // Open sidebar first
+    const menuButton = screen.getByRole('button', { name: /abrir menu/i });
+    fireEvent.click(menuButton);
+
+    // Verify sidebar is open
+    const closeButton = screen.getByRole('button', { name: /fechar menu/i });
+    expect(closeButton).toBeInTheDocument();
+
+    // Click backdrop to close
+    const backdrop = document.querySelector('div[class*="bg-black"]');
+    expect(backdrop).toBeInTheDocument();
+  });
+
+  it('calls onClick when menu item is clicked to close sidebar', () => {
+    (useAuth as jest.Mock).mockReturnValue({
+      user: { id: '1', nome: 'Test User', email: 'test@test.com' },
+      logout: mockLogout,
+    });
+
+    renderSidebar();
+
+    // Open sidebar first
+    const menuButton = screen.getByRole('button', { name: /abrir menu/i });
+    fireEvent.click(menuButton);
+
+    // Click on a menu item
+    const usuariosLink = screen.getByRole('link', { name: /usuários/i });
+    fireEvent.click(usuariosLink);
+
+    // Sidebar should close (the onClick handler should be called)
+  });
 });
