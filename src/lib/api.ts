@@ -1,5 +1,8 @@
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001';
 
+const ACCESS_TOKEN_KEY = 'pedi_auth_access_token';
+const REFRESH_TOKEN_KEY = 'pedi_auth_refresh_token';
+
 export interface Usuario {
   id: string;
   nome: string;
@@ -66,13 +69,21 @@ export interface AtualizarPerfilDto {
   descricao?: string;
 }
 
+function getAuthHeaders(): HeadersInit {
+  const token = localStorage.getItem(ACCESS_TOKEN_KEY);
+  return token ? { Authorization: `Bearer ${token}` } : {};
+}
+
 async function fetchJson<T>(url: string, options?: RequestInit): Promise<T> {
+  const headers: HeadersInit = {
+    'Content-Type': 'application/json',
+    ...getAuthHeaders(),
+    ...options?.headers,
+  };
+
   const res = await fetch(url, {
     ...options,
-    headers: {
-      'Content-Type': 'application/json',
-      ...options?.headers,
-    },
+    headers,
   });
 
   if (!res.ok) {
@@ -85,6 +96,23 @@ async function fetchJson<T>(url: string, options?: RequestInit): Promise<T> {
 }
 
 export const api = {
+  auth: {
+    login: (email: string, senha: string) =>
+      fetchJson<{ accessToken: string; refreshToken: string; expiresIn: number; tokenType: string }>(
+        `${API_URL}/auth/login`,
+        {
+          method: 'POST',
+          body: JSON.stringify({ email, senha }),
+        }
+      ),
+
+    me: () =>
+      fetchJson<Usuario>(`${API_URL}/auth/me`),
+
+    logout: () =>
+      fetchJson<void>(`${API_URL}/auth/logout`, { method: 'POST' }),
+  },
+
   usuarios: {
     listarTodos: () =>
       fetchJson<Usuario[]>(`${API_URL}/users`),

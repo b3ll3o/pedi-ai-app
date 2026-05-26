@@ -1,0 +1,17 @@
+project_name: pedi-ai-app
+version: "1.0"
+methodology: OpenSpec-SDD
+
+rules:
+  - rule: Estilo SDD Obrigatório
+    description: Toda mudança começa com especificação em openspec/specs/
+    enforced: true
+  - rule: Idioma
+    description: Todo código e documentação em Português Brasileiro (pt-BR)
+    enforced: true
+  - rule: Testes
+    description: Cobertura mínima 80%, testes unitários para componentes
+    enforced: true
+  - rule: Critérios de Aceitação
+    description: Implementação só pode começar após spec existir
+    enforced: true

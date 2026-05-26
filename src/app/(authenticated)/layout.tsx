@@ -1,9 +1,8 @@
 'use client';
 
-import { useAuth } from '@/lib/auth';
+import { useAuth } from '@/lib/auth-context';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
-import { MainLayout } from '@/components/MainLayout';
 import { LogOut, User } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -16,15 +15,15 @@ const menuItems = [
 ];
 
 function AuthenticatedLayout({ children }: { children: React.ReactNode }) {
-  const { user, isLoading, logout } = useAuth();
+  const { user, isLoading, logout, isAuthenticated } = useAuth();
   const router = useRouter();
   const pathname = usePathname();
 
   useEffect(() => {
-    if (!isLoading && !user) {
+    if (!isLoading && !isAuthenticated) {
       router.push('/login');
     }
-  }, [user, isLoading, router]);
+  }, [isLoading, isAuthenticated, router]);
 
   if (isLoading) {
     return (

@@ -69,7 +69,7 @@ export default function HomePage() {
 
           <div className={styles.navLinks}>
             <a href="#features" className={styles.navLink}>Funcionalidades</a>
-            <a href="#how" className={styles.navLink}>Como Funciona</a>
+            <a href="#how-it-works" className={styles.navLink}>Como Funciona</a>
             <a href="#pricing" className={styles.navLink}>Preços</a>
           </div>
 
