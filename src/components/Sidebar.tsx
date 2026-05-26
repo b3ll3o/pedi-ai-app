@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { Menu, X, Users, Shield, Key, LogOut } from 'lucide-react';
 import { useAuth } from '@/lib/auth-context';
-import { useSidebar } from './SidebarContext';
+import { useSidebar } from './dashboard/SidebarContext';
 
 const menuItems = [
   { href: '/dashboard/usuarios', label: 'Usuários', icon: Users },
