@@ -105,10 +105,15 @@ jobs:
             # Criar .env se não existir (temporário)
             if [ ! -f /root/pedi-ai-app/.env ]; then
               echo "ATENÇÃO: .env não encontrado, criando temporário..."
-              echo "NEXT_PUBLIC_API_URL=http://localhost:3001" > /root/pedi-ai-app/.env
+              echo "NEXT_PUBLIC_API_URL=/api" > /root/pedi-ai-app/.env
               echo "NODE_ENV=production" >> /root/pedi-ai-app/.env
               echo "PORT=3000" >> /root/pedi-ai-app/.env
               echo "HOST=0.0.0.0" >> /root/pedi-ai-app/.env
+            fi
+
+            # Verificar se NEXT_PUBLIC_API_URL existe e corrigir se necessário
+            if ! grep -q "NEXT_PUBLIC_API_URL" /root/pedi-ai-app/.env 2>/dev/null; then
+              echo "NEXT_PUBLIC_API_URL=/api" >> /root/pedi-ai-app/.env
             fi
 
             # Recarregar e iniciar serviço systemd
