@@ -40,21 +40,21 @@ export function Sidebar() {
       )}
 
       <aside
-        className={`fixed lg:static inset-y-0 left-0 z-50 w-64 bg-secondary text-white flex flex-col transform transition-transform lg:translate-x-0 ${
+        className={`fixed inset-y-0 left-0 z-50 w-64 bg-secondary text-white flex flex-col transform transition-transform lg:static lg:translate-x-0 lg:h-auto lg:min-h-0 lg:w-64 ${
           open ? 'translate-x-0' : '-translate-x-full'
-        }`}
+        } ${open ? 'h-screen' : 'h-auto'}`}
       >
-        <div className="p-4 border-b border-secondary-light flex items-center justify-between">
+        <div className="flex-none p-4 border-b border-secondary-light flex items-center justify-between">
           <div>
             <h1 className="text-xl font-bold">Pedi-AI</h1>
             <p className="text-sm text-gray-400">Gestão</p>
           </div>
-          <button onClick={() => setOpen(false)} className="lg:hidden text-white">
+          <button onClick={() => setOpen(false)} className="lg:hidden text-white p-1">
             <X className="w-6 h-6" />
           </button>
         </div>
 
-        <nav className="flex-1 p-4 overflow-y-auto">
+        <nav className="flex-1 min-h-0 overflow-y-auto p-4">
           <ul className="space-y-1">
             {menuItems.map((item) => {
               const isActive = pathname.startsWith(item.href);
@@ -89,9 +89,9 @@ export function Sidebar() {
           </ul>
         </nav>
 
-        <div className="p-4 border-t border-secondary-light">
+        <div className="flex-none p-4 border-t border-secondary-light">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-white font-bold">
+            <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-white font-bold shrink-0">
               {user?.nome?.charAt(0).toUpperCase() || 'U'}
             </div>
             <div className="flex-1 min-w-0">
