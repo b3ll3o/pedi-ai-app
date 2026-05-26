@@ -68,37 +68,41 @@ jobs:
             mkdir -p ~/.ssh
             ssh-keyscan -H github.com >> ~/.ssh/known_hosts 2>/dev/null || true
 
-            # Se pasta não existe, clonar. Se existe, fazer pull.
-            if [ ! -d pedi-ai-app ]; then
-              git clone https://github.com/b3ll3o/pedi-ai-app.git pedi-ai-app
+            # Instalar Node.js 20 se não existir
+            if ! command -v node &> /dev/null || [[ $(node -v) != v20* ]]; then
+              curl -fsSL https://deb.nodesource.com/setup_20.x | bash -
+              apt-get install -y nodejs
             fi
 
-            cd pedi-ai-app
+            # Se pasta não existe, clonar. Se existe, fazer pull.
+            if [ ! -d /root/pedi-ai-app ]; then
+              git clone https://github.com/b3ll3o/pedi-ai-app.git /root/pedi-ai-app
+            fi
+
+            cd /root/pedi-ai-app
 
             # Pull latest changes
             git pull origin main
 
-            # Parar serviços existentes
-            docker compose down || true
+            # Build com NEXT_PUBLIC_API_URL apontando para localhost
+            NEXT_PUBLIC_API_URL=http://localhost:3001 npm ci
+            npm run build
 
-            # Garantir que rede Docker existe e conectar containers
-            docker network create pedinet 2>/dev/null || true
+            # Copiar e instalar serviço systemd
+            cp deploy/pedi-ai-app.service /etc/systemd/system/
 
-            # Conectar container da API se existir (pode não estar rodsando)
-            docker network connect pedinet pedi_ai_api 2>/dev/null || true
-
-            # Conectar PostgreSQL se existir
-            docker network connect pedinet pedi_ai_postgres 2>/dev/null || true
-
-            # Garantir que porta 3000 está livre
+            # Parar e desabilitar container Docker (se existir)
+            docker compose down 2>/dev/null || true
+            systemctl disable pedi-ai-app 2>/dev/null || true
             fuser -k 3000/tcp 2>/dev/null || true
             sleep 2
 
-            # Build e start - API disponível em api:3001 via rede Docker
-            # NEXT_PUBLIC_API_URL para comunicação interna Docker
-            NEXT_PUBLIC_API_URL=http://api:3001 docker compose up -d --build
+            # Recarregar e iniciar serviço systemd
+            systemctl daemon-reload
+            systemctl enable pedi-ai-app
+            systemctl restart pedi-ai-app
 
-            # Aguardar App ficar healthy
+            # Aguardar App ficar ready
             echo "Aguardando App Next.js..."
             for i in {1..60}; do
               if curl -sf http://localhost:3000 > /dev/null 2>&1; then
@@ -109,19 +113,17 @@ jobs:
               sleep 2
             done
 
-            # Configurar Nginx para andreazzi.tech
-            # Limpar qualquer config anterior conflitante
+            # Configurar Nginx para andreazzi.tech (com proxy para API)
             sudo rm -f /etc/nginx/sites-available/andreazzi.tech /etc/nginx/sites-enabled/andreazzi.tech 2>/dev/null || true
 
-            printf '%s\n' 'server {' '    listen 80;' '    server_name andreazzi.tech;' '' '    location / {' '        proxy_pass http://localhost:3000;' '        proxy_http_version 1.1;' '        proxy_set_header Upgrade $http_upgrade;' '        proxy_set_header Connection '"'"'upgrade'"'"';' '        proxy_set_header Host $host;' '        proxy_set_header X-Real-IP $remote_addr;' '        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;' '        proxy_set_header X-Forwarded-Proto $scheme;' '        proxy_cache_bypass $http_upgrade;' '    }' '}' | sudo tee /etc/nginx/sites-available/andreazzi.tech > /dev/null
+            printf '%s\n' 'server {' '    listen 80;' '    server_name andreazzi.tech;' '' '    location /api {' '        proxy_pass http://127.0.0.1:3001;' '        proxy_http_version 1.1;' '        proxy_set_header Upgrade $http_upgrade;' '        proxy_set_header Connection '"'"'upgrade'"'"';' '        proxy_set_header Host $host;' '        proxy_set_header X-Real-IP $remote_addr;' '        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;' '        proxy_set_header X-Forwarded-Proto $scheme;' '        proxy_cache_bypass $http_upgrade;' '    }' '' '    location / {' '        proxy_pass http://127.0.0.1:3000;' '        proxy_http_version 1.1;' '        proxy_set_header Upgrade $http_upgrade;' '        proxy_set_header Connection '"'"'upgrade'"'"';' '        proxy_set_header Host $host;' '        proxy_set_header X-Real-IP $remote_addr;' '        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;' '        proxy_set_header X-Forwarded-Proto $scheme;' '        proxy_cache_bypass $http_upgrade;' '    }' '}' | sudo tee /etc/nginx/sites-available/andreazzi.tech > /dev/null
 
             sudo ln -sf /etc/nginx/sites-available/andreazzi.tech /etc/nginx/sites-enabled/
             sudo rm -f /etc/nginx/sites-enabled/default 2>/dev/null || true
 
-            # Start nginx se não estiver ativo
-            sudo systemctl start nginx || true
+            # Recarregar nginx
             sudo nginx -t && sudo systemctl reload nginx || sudo systemctl restart nginx
             echo "Nginx configurado para andreazzi.tech!"
 
-            # Verificar logs
-            docker compose logs --tail=20 web
+            # Verificar status
+            systemctl status pedi-ai-app --no-pager
