@@ -4,6 +4,7 @@ import { useAuth } from '@/lib/auth-context';
 import { useRouter, usePathname } from 'next/navigation';
 import { useEffect } from 'react';
 import { Sidebar } from './Sidebar';
+import { SidebarProvider } from './SidebarContext';
 import { LayoutDashboard } from 'lucide-react';
 
 const pageTitles: Record<string, { title: string; breadcrumb: string }> = {
@@ -55,20 +56,22 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
   const { title, breadcrumb } = getPageInfo(pathname);
 
   return (
-    <div className="min-h-screen bg-background flex">
-      <Sidebar />
-      <div className="flex-1 flex flex-col min-w-0 lg:pl-64">
-        <header className="bg-surface border-b border-border px-4 sm:px-6 py-4">
-          <div className="flex items-center gap-2 text-sm text-text-secondary mb-1">
-            <LayoutDashboard className="w-4 h-4" />
-            <span>{breadcrumb}</span>
-          </div>
-          <h1 className="text-xl sm:text-2xl font-bold text-text-primary">{title}</h1>
-        </header>
-        <main className="flex-1 p-4 sm:p-6 overflow-auto">
-          {children}
-        </main>
+    <SidebarProvider>
+      <div className="min-h-screen bg-background flex">
+        <Sidebar />
+        <div className="flex-1 flex flex-col min-w-0 lg:pl-64">
+          <header className="bg-surface border-b border-border px-4 sm:px-6 py-4">
+            <div className="flex items-center gap-2 text-sm text-text-secondary mb-1">
+              <LayoutDashboard className="w-4 h-4" />
+              <span>{breadcrumb}</span>
+            </div>
+            <h1 className="text-xl sm:text-2xl font-bold text-text-primary">{title}</h1>
+          </header>
+          <main className="flex-1 p-4 sm:p-6 overflow-auto">
+            {children}
+          </main>
+        </div>
       </div>
-    </div>
+    </SidebarProvider>
   );
 }

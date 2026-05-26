@@ -19,6 +19,16 @@ jest.mock('../Sidebar', () => ({
   Sidebar: () => <div data-testid="mock-sidebar">Sidebar</div>,
 }));
 
+jest.mock('../SidebarContext', () => ({
+  SidebarProvider: ({ children }: { children: React.ReactNode }) => children,
+  useSidebar: () => ({
+    isOpen: false,
+    open: jest.fn(),
+    close: jest.fn(),
+    toggle: jest.fn(),
+  }),
+}));
+
 import { useAuth } from '@/lib/auth-context';
 
 describe('DashboardLayout', () => {
