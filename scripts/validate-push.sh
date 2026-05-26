@@ -7,6 +7,13 @@ set -e
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 cd "$SCRIPT_DIR"
 
+echo "=== Verificando TypeScript ==="
+npx tsc --noEmit
+if [ ${PIPESTATUS[0]} -ne 0 ]; then
+    echo "❌ TypeScript encontrou erros"
+    exit 1
+fi
+
 echo "=== Verificando linter ==="
 npm run lint 2>&1 | tee /tmp/lint-output.txt
 if [ ${PIPESTATUS[0]} -ne 0 ]; then
