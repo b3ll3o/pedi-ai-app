@@ -26,28 +26,21 @@ jobs:
         uses: actions/setup-node@v6
         with:
           node-version: 20
-          cache: 'npm'
-          cache-dependency-path: package-lock.json
 
       - name: Instalar dependências
         run: npm ci
-        working-directory: pedi-ai-app
 
       - name: Lint
         run: npm run lint
-        working-directory: pedi-ai-app
 
       - name: Type check
         run: npx tsc --noEmit
-        working-directory: pedi-ai-app
 
       - name: Testes unitários
         run: npm test
-        working-directory: pedi-ai-app
 
       - name: Verificar cobertura
         run: npm run test:coverage
-        working-directory: pedi-ai-app
 
   deploy:
     name: Deploy
