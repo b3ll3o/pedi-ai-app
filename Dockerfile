@@ -15,7 +15,6 @@ FROM node:22-alpine AS runner
 WORKDIR /app
 ENV NODE_ENV=production PORT=3000
 RUN addgroup -g 1001 -S nodejs && adduser -S nextjs -u 1001
-COPY --from=build --chown=nextjs:nodejs /app/public ./public
 COPY --from=build --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=build --chown=nextjs:nodejs /app/.next/static ./.next/static
 COPY --from=build --chown=nextjs:nodejs /app/package.json ./package.json
