@@ -57,7 +57,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
   return (
     <div className="min-h-screen bg-background flex">
       <Sidebar />
-      <div className="flex-1 flex flex-col min-w-0">
+      <div className="flex-1 flex flex-col min-w-0 lg:pl-64">
         <header className="bg-surface border-b border-border px-4 sm:px-6 py-4">
           <div className="flex items-center gap-2 text-sm text-text-secondary mb-1">
             <LayoutDashboard className="w-4 h-4" />
