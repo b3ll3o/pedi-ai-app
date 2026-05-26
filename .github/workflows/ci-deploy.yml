@@ -81,12 +81,22 @@ jobs:
             # Parar serviços existentes
             docker compose down || true
 
+            # Garantir que rede Docker existe e conectar containers
+            docker network create pedinet 2>/dev/null || true
+
+            # Conectar container da API se existir (pode não estar rodsando)
+            docker network connect pedinet pedi_ai_api 2>/dev/null || true
+
+            # Conectar PostgreSQL se existir
+            docker network connect pedinet pedi_ai_postgres 2>/dev/null || true
+
             # Garantir que porta 3000 está livre
             fuser -k 3000/tcp 2>/dev/null || true
             sleep 2
 
-            # Build e start
-            docker compose up -d --build
+            # Build e start - API disponível em api:3001 via rede Docker
+            # NEXT_PUBLIC_API_URL para comunicação interna Docker
+            NEXT_PUBLIC_API_URL=http://api:3001 docker compose up -d --build
 
             # Aguardar App ficar healthy
             echo "Aguardando App Next.js..."
