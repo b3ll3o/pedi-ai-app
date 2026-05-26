@@ -35,7 +35,7 @@ describe('StatusBadge', () => {
     render(<StatusBadge status="fechado" />);
     const badge = screen.getByText('Fechado');
     expect(badge).toBeInTheDocument();
-    expect(badge).toHaveClass('bg-gray-100', 'text-gray-600');
+    expect(badge).toHaveClass('bg-background', 'text-text-secondary', 'border');
   });
 
   it('renders cancelado status', () => {

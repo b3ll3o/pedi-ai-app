@@ -75,7 +75,7 @@ export default function HomePage() {
 
           <div className={styles.navCtas}>
             <Link href="/login" className={styles.navLink}>Entrar</Link>
-            <Link href="/dashboard" className={styles.navCta}>Começar Grátis</Link>
+            <Link href="/usuarios/novo" className={styles.navCta}>Começar Grátis</Link>
           </div>
         </div>
       </nav>
@@ -110,7 +110,7 @@ export default function HomePage() {
             </span>
           </div>
           <div className={styles.heroCtas}>
-            <Link href="/dashboard" className={styles.ctaPrimary}>
+            <Link href="/usuarios/novo" className={styles.ctaPrimary}>
               Começar Gratuitamente
               <ArrowRight size={18} aria-hidden="true" />
             </Link>
@@ -434,7 +434,7 @@ export default function HomePage() {
                   <Check aria-hidden="true" size={16} /> Suporte por chat
                 </li>
               </ul>
-              <Link href="/dashboard" className={styles.pricingCta}>
+              <Link href="/usuarios/novo" className={styles.pricingCta}>
                 Começar Grátis
               </Link>
             </div>
@@ -472,7 +472,7 @@ export default function HomePage() {
                   <Check aria-hidden="true" size={16} /> Suporte prioritário
                 </li>
               </ul>
-              <Link href="/dashboard" className={styles.pricingCta}>
+              <Link href="/usuarios/novo" className={styles.pricingCta}>
                 Começar Grátis
               </Link>
             </div>
@@ -507,7 +507,7 @@ export default function HomePage() {
                   <Check aria-hidden="true" size={16} /> Implementação dedicada
                 </li>
               </ul>
-              <Link href="/dashboard" className={styles.pricingCta}>
+              <Link href="/usuarios/novo" className={styles.pricingCta}>
                 Falar com Vendas
               </Link>
             </div>
@@ -563,7 +563,7 @@ export default function HomePage() {
                 Teste grátis 14 dias
               </span>
             </div>
-            <Link href="/dashboard" className={styles.ctaPrimary}>
+            <Link href="/usuarios/novo" className={styles.ctaPrimary}>
               Criar Conta Grátis
               <ArrowRight aria-hidden="true" size={18} />
             </Link>

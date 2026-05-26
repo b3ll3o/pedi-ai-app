@@ -3,12 +3,12 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Menu, X, LayoutDashboard, ClipboardList, Users } from 'lucide-react';
+import { Menu, X, Users, Shield, Key } from 'lucide-react';
 
 const menuItems = [
-  { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
-  { href: '/pedidos', label: 'Pedidos', icon: ClipboardList },
   { href: '/usuarios', label: 'Usuários', icon: Users },
+  { href: '/perfis', label: 'Perfis', icon: Shield },
+  { href: '/permissoes', label: 'Permissões', icon: Key },
 ];
 
 export function Sidebar() {

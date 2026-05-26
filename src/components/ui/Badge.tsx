@@ -10,7 +10,7 @@ export function Badge({ variant = 'neutral', children, className = '' }: BadgePr
     warning: 'bg-warning/10 text-warning',
     error: 'bg-error/10 text-error',
     info: 'bg-primary/10 text-primary',
-    neutral: 'bg-gray-100 text-gray-700',
+    neutral: 'bg-background text-text-secondary border border-border',
   };
 
   return (

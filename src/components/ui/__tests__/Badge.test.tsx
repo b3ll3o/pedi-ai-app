@@ -35,7 +35,7 @@ describe('Badge', () => {
   it('applies neutral variant by default', () => {
     render(<Badge>Neutral</Badge>);
     const badge = screen.getByText('Neutral');
-    expect(badge).toHaveClass('bg-gray-100', 'text-gray-700');
+    expect(badge).toHaveClass('bg-background', 'text-text-secondary', 'border', 'border-border');
   });
 
   it('applies custom className', () => {

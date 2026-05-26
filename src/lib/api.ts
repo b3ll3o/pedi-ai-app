@@ -22,6 +22,50 @@ export interface AtualizarUsuarioDto {
   senha?: string;
 }
 
+export interface Permissao {
+  id: string;
+  nome: string;
+  chave: string;
+  descricao?: string;
+  createdAt: string;
+  updatedAt: string;
+  deletedAt: string | null;
+  version: number;
+}
+
+export interface CriarPermissaoDto {
+  nome: string;
+  chave: string;
+  descricao?: string;
+}
+
+export interface AtualizarPermissaoDto {
+  nome?: string;
+  chave?: string;
+  descricao?: string;
+}
+
+export interface Perfil {
+  id: string;
+  nome: string;
+  descricao?: string;
+  permissoes: Permissao[];
+  createdAt: string;
+  updatedAt: string;
+  deletedAt: string | null;
+  version: number;
+}
+
+export interface CriarPerfilDto {
+  nome: string;
+  descricao?: string;
+}
+
+export interface AtualizarPerfilDto {
+  nome?: string;
+  descricao?: string;
+}
+
 async function fetchJson<T>(url: string, options?: RequestInit): Promise<T> {
   const res = await fetch(url, {
     ...options,
@@ -65,6 +109,67 @@ export const api = {
 
     deletar: (id: string) =>
       fetchJson<void>(`${API_URL}/users/${id}`, {
+        method: 'DELETE',
+      }),
+  },
+
+  permissoes: {
+    listarTodos: () =>
+      fetchJson<Permissao[]>(`${API_URL}/permissoes`),
+
+    listarUm: (id: string) =>
+      fetchJson<Permissao>(`${API_URL}/permissoes/${id}`),
+
+    criar: (data: CriarPermissaoDto) =>
+      fetchJson<Permissao>(`${API_URL}/permissoes`, {
+        method: 'POST',
+        body: JSON.stringify(data),
+      }),
+
+    atualizar: (id: string, data: AtualizarPermissaoDto) =>
+      fetchJson<Permissao>(`${API_URL}/permissoes/${id}`, {
+        method: 'PATCH',
+        body: JSON.stringify(data),
+      }),
+
+    deletar: (id: string) =>
+      fetchJson<void>(`${API_URL}/permissoes/${id}`, {
+        method: 'DELETE',
+      }),
+  },
+
+  perfis: {
+    listarTodos: () =>
+      fetchJson<Perfil[]>(`${API_URL}/perfis`),
+
+    listarUm: (id: string) =>
+      fetchJson<Perfil>(`${API_URL}/perfis/${id}`),
+
+    criar: (data: CriarPerfilDto) =>
+      fetchJson<Perfil>(`${API_URL}/perfis`, {
+        method: 'POST',
+        body: JSON.stringify(data),
+      }),
+
+    atualizar: (id: string, data: AtualizarPerfilDto) =>
+      fetchJson<Perfil>(`${API_URL}/perfis/${id}`, {
+        method: 'PATCH',
+        body: JSON.stringify(data),
+      }),
+
+    deletar: (id: string) =>
+      fetchJson<void>(`${API_URL}/perfis/${id}`, {
+        method: 'DELETE',
+      }),
+
+    associarPermissoes: (id: string, permissoesIds: string[]) =>
+      fetchJson<Perfil>(`${API_URL}/perfis/${id}/permissoes`, {
+        method: 'POST',
+        body: JSON.stringify({ permissoesIds }),
+      }),
+
+    desassociarPermissao: (id: string, permissaoId: string) =>
+      fetchJson<void>(`${API_URL}/perfis/${id}/permissoes/${permissaoId}`, {
         method: 'DELETE',
       }),
   },
