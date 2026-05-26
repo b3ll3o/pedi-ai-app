@@ -106,8 +106,16 @@ jobs:
             # Pull latest changes
             git pull origin main
 
-            # Build com NEXT_PUBLIC_API_URL apontando para /api (nginx proxy)
-            NEXT_PUBLIC_API_URL=/api npm ci
+            # Criar .env.local ANTES do build ( Next.js precisa em tempo de build)
+            if [ ! -f /root/pedi-ai-app/.env.local ]; then
+              echo "NEXT_PUBLIC_API_URL=/api" > /root/pedi-ai-app/.env.local
+              echo "NODE_ENV=production" >> /root/pedi-ai-app/.env.local
+              echo "PORT=3000" >> /root/pedi-ai-app/.env.local
+              echo "HOST=0.0.0.0" >> /root/pedi-ai-app/.env.local
+            fi
+
+            # Build com NEXT_PUBLIC_API_URL pointing to nginx proxy
+            npm ci
             npm run build
 
             # Copiar e instalar serviço systemd
