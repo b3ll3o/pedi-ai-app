@@ -52,6 +52,14 @@ export function Sidebar() {
               </Link>
             );
           })}
+          <button
+            onClick={handleLogout}
+            className="flex flex-col items-center gap-1 px-4 py-2 rounded-lg text-text-secondary hover:text-error transition-colors"
+            title="Sair"
+          >
+            <LogOut className="w-6 h-6" aria-hidden="true" />
+            <span className="text-xs font-medium">Sair</span>
+          </button>
         </div>
       </nav>
 

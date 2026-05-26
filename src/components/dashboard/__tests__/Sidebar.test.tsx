@@ -76,8 +76,8 @@ describe('Sidebar', () => {
 
     renderSidebar();
 
-    const logoutButton = screen.getByTitle('Sair');
-    logoutButton.click();
+    const logoutButtons = screen.getAllByTitle('Sair');
+    logoutButtons[0].click();
 
     expect(mockLogout).toHaveBeenCalled();
     expect(mockPush).toHaveBeenCalledWith('/login');
