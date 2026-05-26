@@ -8,6 +8,7 @@ jest.mock('next/navigation', () => ({
   useRouter: () => ({
     push: mockPush,
   }),
+  usePathname: () => '/dashboard/usuarios',
 }));
 
 jest.mock('@/lib/auth-context', () => ({

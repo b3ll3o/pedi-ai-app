@@ -7,9 +7,9 @@ import { Menu, X, Users, Shield, Key, LogOut } from 'lucide-react';
 import { useAuth } from '@/lib/auth-context';
 
 const menuItems = [
-  { href: '/usuarios', label: 'Usuários', icon: Users },
-  { href: '/perfis', label: 'Perfis', icon: Shield },
-  { href: '/permissoes', label: 'Permissões', icon: Key },
+  { href: '/dashboard/usuarios', label: 'Usuários', icon: Users },
+  { href: '/dashboard/perfis', label: 'Perfis', icon: Shield },
+  { href: '/dashboard/permissoes', label: 'Permissões', icon: Key },
 ];
 
 export function Sidebar() {
@@ -57,7 +57,7 @@ export function Sidebar() {
         <nav className="flex-1 p-4 overflow-y-auto">
           <ul className="space-y-1">
             {menuItems.map((item) => {
-              const isActive = pathname === item.href;
+              const isActive = pathname.startsWith(item.href);
               const Icon = item.icon;
               return (
                 <li key={item.href}>

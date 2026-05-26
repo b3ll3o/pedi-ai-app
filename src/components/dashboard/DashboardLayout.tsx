@@ -1,9 +1,29 @@
 'use client';
 
 import { useAuth } from '@/lib/auth-context';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import { useEffect } from 'react';
 import { Sidebar } from './Sidebar';
+import { LayoutDashboard } from 'lucide-react';
+
+const pageTitles: Record<string, { title: string; breadcrumb: string }> = {
+  '/dashboard/usuarios': { title: 'Usuários', breadcrumb: 'Gestão / Usuários' },
+  '/dashboard/perfis': { title: 'Perfis', breadcrumb: 'Gestão / Perfis' },
+  '/dashboard/permissoes': { title: 'Permissões', breadcrumb: 'Gestão / Permissões' },
+};
+
+function getPageInfo(pathname: string) {
+  if (pathname.startsWith('/dashboard/usuarios')) {
+    return pageTitles['/dashboard/usuarios'];
+  }
+  if (pathname.startsWith('/dashboard/perfis')) {
+    return pageTitles['/dashboard/perfis'];
+  }
+  if (pathname.startsWith('/dashboard/permissoes')) {
+    return pageTitles['/dashboard/permissoes'];
+  }
+  return { title: 'Dashboard', breadcrumb: 'Dashboard' };
+}
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
@@ -12,6 +32,7 @@ interface DashboardLayoutProps {
 export function DashboardLayout({ children }: DashboardLayoutProps) {
   const { user, isLoading, isAuthenticated } = useAuth();
   const router = useRouter();
+  const pathname = usePathname();
 
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
@@ -31,10 +52,19 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
     return null;
   }
 
+  const { title, breadcrumb } = getPageInfo(pathname);
+
   return (
     <div className="min-h-screen bg-background flex">
       <Sidebar />
       <div className="flex-1 flex flex-col min-w-0">
+        <header className="bg-surface border-b border-border px-4 sm:px-6 py-4">
+          <div className="flex items-center gap-2 text-sm text-text-secondary mb-1">
+            <LayoutDashboard className="w-4 h-4" />
+            <span>{breadcrumb}</span>
+          </div>
+          <h1 className="text-xl sm:text-2xl font-bold text-text-primary">{title}</h1>
+        </header>
         <main className="flex-1 p-4 sm:p-6 pb-24 lg:pb-6 overflow-auto">
           {children}
         </main>
