@@ -68,6 +68,11 @@ jobs:
             mkdir -p ~/.ssh
             ssh-keyscan -H github.com >> ~/.ssh/known_hosts 2>/dev/null || true
 
+            # Se pasta não existe, clonar. Se existe, fazer pull.
+            if [ ! -d pedi-ai-app ]; then
+              git clone https://github.com/b3ll3o/pedi-ai-app.git pedi-ai-app
+            fi
+
             cd pedi-ai-app
 
             # Pull latest changes
