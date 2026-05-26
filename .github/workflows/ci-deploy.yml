@@ -103,6 +103,10 @@ jobs:
 
             cd /root/pedi-ai-app
 
+            # Reset + clean para garantir estado limpo
+            git reset --hard origin/main
+            git clean -fd
+
             # Pull latest changes
             git pull origin main
 
@@ -179,6 +183,10 @@ jobs:
 
             # Recarregar nginx
             ssh_retry sudo nginx -t && ssh_retry sudo systemctl reload nginx || ssh_retry sudo systemctl restart nginx
+
+            # Verificar se config foi aplicado corretamente
+            echo "=== Verificando config do nginx ==="
+            ssh_retry "grep -A2 'location /api/' /etc/nginx/sites-available/andreazzi.tech" || echo "ERRO: nginx config incorreto!"
             echo "Nginx configurado para andreazzi.tech!"
 
             # Verificar status
