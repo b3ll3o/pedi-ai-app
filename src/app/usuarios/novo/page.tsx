@@ -3,19 +3,27 @@
 import { useForm } from 'react-hook-form';
 import { CriarUsuarioDto, api } from '@/lib/api';
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button, Input } from '@/components/ui';
 import { User, ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
+import { useAuth } from '@/lib/auth-context';
 
 export default function NovoUsuarioPage() {
   const router = useRouter();
+  const { isAuthenticated, isLoading } = useAuth();
   const [error, setError] = useState<string | null>(null);
   const {
     register,
     handleSubmit,
     formState: { errors, isSubmitting },
   } = useForm<CriarUsuarioDto>();
+
+  useEffect(() => {
+    if (!isLoading && isAuthenticated) {
+      router.push('/dashboard');
+    }
+  }, [isLoading, isAuthenticated, router]);
 
   const onSubmit = async (data: CriarUsuarioDto) => {
     try {
@@ -27,11 +35,13 @@ export default function NovoUsuarioPage() {
     }
   };
 
+  const voltarHref = isAuthenticated ? '/dashboard' : '/';
+
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-4">
       <div className="w-full max-w-md">
         <Link
-          href="/"
+          href={voltarHref}
           className="inline-flex items-center gap-2 text-text-secondary hover:text-text-primary mb-6 transition-colors"
         >
           <ArrowLeft className="w-4 h-4" />

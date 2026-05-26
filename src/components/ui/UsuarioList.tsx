@@ -42,7 +42,7 @@ export function UsuarioList() {
           <RefreshCw className="w-4 h-4 mr-2" />
           Carregar
         </Button>
-        <Button onClick={() => router.push('/usuarios/novo')}>
+        <Button onClick={() => router.push('/dashboard/usuarios/novo')}>
           <Plus className="w-4 h-4 mr-2" />
           Novo Usuário
         </Button>
@@ -91,7 +91,7 @@ export function UsuarioList() {
                   </td>
                   <td className="px-4 py-4">
                     <div className="flex justify-end gap-2">
-                      <Button variant="ghost" size="sm" onClick={() => router.push(`/usuarios/${usuario.id}`)}>
+                      <Button variant="ghost" size="sm" onClick={() => router.push(`/dashboard/usuarios/${usuario.id}`)}>
                         <Edit2 className="w-4 h-4" />
                       </Button>
                       <Button variant="ghost" size="sm" onClick={() => handleDelete(usuario.id, usuario.nome)} className="text-error hover:bg-error/10">
