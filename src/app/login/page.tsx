@@ -18,7 +18,7 @@ export default function LoginPage() {
 
   useEffect(() => {
     if (!isLoading && isAuthenticated) {
-      router.push('/usuarios');
+      router.push('/dashboard');
     }
   }, [isAuthenticated, isLoading, router]);
 
@@ -29,7 +29,7 @@ export default function LoginPage() {
 
     try {
       await login(email, senha);
-      router.push('/usuarios');
+      router.push('/dashboard');
       router.refresh();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Erro ao fazer login');

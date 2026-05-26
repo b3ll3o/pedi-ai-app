@@ -67,7 +67,7 @@ describe('PublicLayout', () => {
     expect(container).toBeEmptyDOMElement();
   });
 
-  it('redirects to /usuarios when authenticated', () => {
+  it('redirects to /dashboard when authenticated', () => {
     (useAuth as jest.Mock).mockReturnValue({
       isAuthenticated: true,
       isLoading: false,
@@ -79,6 +79,6 @@ describe('PublicLayout', () => {
       </PublicLayout>
     );
 
-    expect(mockPush).toHaveBeenCalledWith('/usuarios');
+    expect(mockPush).toHaveBeenCalledWith('/dashboard');
   });
 });

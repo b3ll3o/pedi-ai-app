@@ -10,7 +10,7 @@ export function PublicLayout({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     if (!isLoading && isAuthenticated) {
-      router.push('/usuarios');
+      router.push('/dashboard');
     }
   }, [isAuthenticated, isLoading, router]);
 
