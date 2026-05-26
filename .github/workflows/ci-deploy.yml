@@ -65,6 +65,24 @@ jobs:
           port: ${{ secrets.VPS_PORT || 22 }}
           script: |
             set -e
+
+            # Função para executar com retry
+            ssh_retry() {
+              local max_attempts=3
+              local delay=5
+              for i in $(seq 1 $max_attempts); do
+                if "$@"; then
+                  return 0
+                fi
+                if [ $i -lt $max_attempts ]; then
+                  echo "Tentativa $i falhou, retry em ${delay}s..."
+                  sleep $delay
+                  delay=$((delay * 2))
+                fi
+              done
+              return 1
+            }
+
             mkdir -p ~/.ssh
             ssh-keyscan -H github.com >> ~/.ssh/known_hosts 2>/dev/null || true
 
@@ -152,7 +170,7 @@ jobs:
             sudo rm -f /etc/nginx/sites-enabled/default 2>/dev/null || true
 
             # Recarregar nginx
-            sudo nginx -t && sudo systemctl reload nginx || sudo systemctl restart nginx
+            ssh_retry sudo nginx -t && ssh_retry sudo systemctl reload nginx || ssh_retry sudo systemctl restart nginx
             echo "Nginx configurado para andreazzi.tech!"
 
             # Verificar status
