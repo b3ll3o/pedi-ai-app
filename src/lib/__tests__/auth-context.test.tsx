@@ -25,7 +25,7 @@ describe('AuthProvider', () => {
         <span data-testid="is-authenticated">{isAuthenticated.toString()}</span>
         <span data-testid="user">{user?.email || 'null'}</span>
         <span data-testid="token">{accessToken || 'null'}</span>
-        <button onClick={() => { login('test@test.com', 'password'); }}>Login</button>
+        <button onClick={() => { login('test@test.com', 'password').catch(() => {}); }}>Login</button>
         <button onClick={() => { logout(); }}>Logout</button>
       </div>
     );
