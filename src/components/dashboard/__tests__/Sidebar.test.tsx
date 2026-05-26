@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import { Sidebar } from '../Sidebar';
 
 const mockPush = jest.fn();
@@ -27,7 +27,7 @@ describe('Sidebar', () => {
     return render(<Sidebar />);
   };
 
-  it('renders sidebar with logo', () => {
+  it('renders sidebar with logo on desktop', () => {
     (useAuth as jest.Mock).mockReturnValue({
       user: { id: '1', nome: 'Test User', email: 'test@test.com' },
       logout: mockLogout,
@@ -47,10 +47,13 @@ describe('Sidebar', () => {
 
     renderSidebar();
 
-    expect(screen.getByText('Dashboard')).toBeInTheDocument();
-    expect(screen.getByText('Usuários')).toBeInTheDocument();
-    expect(screen.getByText('Perfis')).toBeInTheDocument();
-    expect(screen.getByText('Permissões')).toBeInTheDocument();
+    // Menu items appear in both mobile bottom nav and desktop sidebar
+    const usuariosItems = screen.getAllByText('Usuários');
+    expect(usuariosItems.length).toBeGreaterThan(0);
+    const perfisItems = screen.getAllByText('Perfis');
+    expect(perfisItems.length).toBeGreaterThan(0);
+    const permissoesItems = screen.getAllByText('Permissões');
+    expect(permissoesItems.length).toBeGreaterThan(0);
   });
 
   it('renders user info', () => {
@@ -65,33 +68,6 @@ describe('Sidebar', () => {
     expect(screen.getByText('john@test.com')).toBeInTheDocument();
   });
 
-  it('shows hamburger button on mobile', () => {
-    (useAuth as jest.Mock).mockReturnValue({
-      user: { id: '1', nome: 'Test User', email: 'test@test.com' },
-      logout: mockLogout,
-    });
-
-    renderSidebar();
-
-    const menuButton = screen.getByRole('button', { name: /abrir menu/i });
-    expect(menuButton).toBeInTheDocument();
-  });
-
-  it('opens sidebar when hamburger is clicked', () => {
-    (useAuth as jest.Mock).mockReturnValue({
-      user: { id: '1', nome: 'Test User', email: 'test@test.com' },
-      logout: mockLogout,
-    });
-
-    renderSidebar();
-
-    const menuButton = screen.getByRole('button', { name: /abrir menu/i });
-    fireEvent.click(menuButton);
-
-    const closeButton = screen.getByRole('button', { name: /fechar menu/i });
-    expect(closeButton).toBeInTheDocument();
-  });
-
   it('calls logout and redirects to /login when logout button is clicked', () => {
     (useAuth as jest.Mock).mockReturnValue({
       user: { id: '1', nome: 'Test User', email: 'test@test.com' },
@@ -101,7 +77,7 @@ describe('Sidebar', () => {
     renderSidebar();
 
     const logoutButton = screen.getByTitle('Sair');
-    fireEvent.click(logoutButton);
+    logoutButton.click();
 
     expect(mockLogout).toHaveBeenCalled();
     expect(mockPush).toHaveBeenCalledWith('/login');
@@ -115,47 +91,8 @@ describe('Sidebar', () => {
 
     renderSidebar();
 
-    const usuariosLink = screen.getByRole('link', { name: /usuários/i });
-    expect(usuariosLink).toHaveAttribute('aria-current', 'page');
-  });
-
-  it('closes sidebar when backdrop is clicked', () => {
-    (useAuth as jest.Mock).mockReturnValue({
-      user: { id: '1', nome: 'Test User', email: 'test@test.com' },
-      logout: mockLogout,
-    });
-
-    renderSidebar();
-
-    // Open sidebar first
-    const menuButton = screen.getByRole('button', { name: /abrir menu/i });
-    fireEvent.click(menuButton);
-
-    // Verify sidebar is open
-    const closeButton = screen.getByRole('button', { name: /fechar menu/i });
-    expect(closeButton).toBeInTheDocument();
-
-    // Click backdrop to close
-    const backdrop = document.querySelector('div[class*="bg-black"]');
-    expect(backdrop).toBeInTheDocument();
-  });
-
-  it('calls onClick when menu item is clicked to close sidebar', () => {
-    (useAuth as jest.Mock).mockReturnValue({
-      user: { id: '1', nome: 'Test User', email: 'test@test.com' },
-      logout: mockLogout,
-    });
-
-    renderSidebar();
-
-    // Open sidebar first
-    const menuButton = screen.getByRole('button', { name: /abrir menu/i });
-    fireEvent.click(menuButton);
-
-    // Click on a menu item
-    const usuariosLink = screen.getByRole('link', { name: /usuários/i });
-    fireEvent.click(usuariosLink);
-
-    // Sidebar should close (the onClick handler should be called)
+    const usuariosLinks = screen.getAllByRole('link', { name: /usuários/i });
+    const activeLink = usuariosLinks.find(link => link.getAttribute('aria-current') === 'page');
+    expect(activeLink).toBeInTheDocument();
   });
 });

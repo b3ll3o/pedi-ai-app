@@ -1,9 +1,8 @@
 'use client';
 
-import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { Menu, X, Home, Users, Shield, Key, LogOut } from 'lucide-react';
+import { Home, Users, Shield, Key, LogOut } from 'lucide-react';
 import { useAuth } from '@/lib/auth-context';
 
 const menuItems = [
@@ -17,7 +16,6 @@ export function Sidebar() {
   const pathname = usePathname();
   const router = useRouter();
   const { user, logout } = useAuth();
-  const [open, setOpen] = useState(false);
 
   const handleLogout = () => {
     logout();
@@ -33,34 +31,37 @@ export function Sidebar() {
 
   return (
     <>
-      <button
-        onClick={() => setOpen(true)}
-        className="lg:hidden fixed top-4 left-4 z-50 p-2 bg-secondary text-white rounded-lg"
-        aria-label="Abrir menu"
-      >
-        <Menu className="w-6 h-6" />
-      </button>
+      {/* Mobile: Fixed bottom navigation bar */}
+      <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-50 bg-surface border-t border-border safe-area-bottom">
+        <div className="flex items-center justify-around py-2">
+          {menuItems.map((item) => {
+            const active = isActive(item.href);
+            const Icon = item.icon;
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                className={`flex flex-col items-center gap-1 px-4 py-2 rounded-lg transition-colors ${
+                  active
+                    ? 'text-primary'
+                    : 'text-text-secondary hover:text-text-primary'
+                }`}
+              >
+                <Icon className="w-6 h-6" aria-hidden="true" />
+                <span className="text-xs font-medium">{item.label}</span>
+              </Link>
+            );
+          })}
+        </div>
+      </nav>
 
-      {open && (
-        <div
-          className="lg:hidden fixed inset-0 bg-black/50 z-40"
-          onClick={() => setOpen(false)}
-        />
-      )}
-
-      <aside
-        className={`fixed lg:static inset-y-0 left-0 z-50 w-64 bg-secondary text-white flex flex-col transform transition-transform lg:translate-x-0 ${
-          open ? 'translate-x-0' : '-translate-x-full'
-        }`}
-      >
+      {/* Desktop: Sidebar */}
+      <aside className="hidden lg:flex lg:flex-col lg:w-64 lg:bg-secondary lg:text-white lg:fixed lg:inset-y-0 lg:left-0">
         <div className="p-4 border-b border-secondary-light flex items-center justify-between">
           <div>
             <h1 className="text-xl font-bold">Pedi-AI</h1>
             <p className="text-sm text-gray-400">Gestão</p>
           </div>
-          <button onClick={() => setOpen(false)} className="lg:hidden text-white" aria-label="Fechar menu">
-            <X className="w-6 h-6" />
-          </button>
         </div>
 
         <nav className="flex-1 p-4 overflow-y-auto">
@@ -72,7 +73,6 @@ export function Sidebar() {
                 <li key={item.href}>
                   <Link
                     href={item.href}
-                    onClick={() => setOpen(false)}
                     aria-current={active ? 'page' : undefined}
                     className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
                       active
