@@ -1,0 +1,105 @@
+name: App CI & Deploy
+
+on:
+  push:
+    branches:
+      - master
+    paths:
+      - 'pedi-ai-app/**'
+  pull_request:
+    paths:
+      - 'pedi-ai-app/**'
+  workflow_dispatch:
+
+concurrency:
+  group: app-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  ci:
+    name: CI
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup Node.js 20
+        uses: actions/setup-node@v6
+        with:
+          node-version: 20
+          cache: 'npm'
+          cache-dependency-path: pedi-ai-app/package-lock.json
+
+      - name: Instalar dependências
+        run: npm ci
+        working-directory: pedi-ai-app
+
+      - name: Lint
+        run: npm run lint
+        working-directory: pedi-ai-app
+
+      - name: Type check
+        run: npx tsc --noEmit
+        working-directory: pedi-ai-app
+
+      - name: Testes unitários
+        run: npm test
+        working-directory: pedi-ai-app
+
+      - name: Verificar cobertura
+        run: npm run test:coverage
+        working-directory: pedi-ai-app
+
+  deploy:
+    name: Deploy
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    needs: ci
+    if: github.ref == 'refs/heads/master'
+    environment:
+      name: production
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Deploy App na VPS
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          port: ${{ secrets.VPS_PORT || 22 }}
+          script: |
+            set -e
+            mkdir -p ~/.ssh
+            ssh-keyscan -H github.com >> ~/.ssh/known_hosts 2>/dev/null || true
+
+            cd pedi-ai-app
+
+            # Pull latest changes
+            git pull origin master
+
+            # Parar serviços existentes
+            docker compose down || true
+
+            # Garantir que porta 3000 está livre
+            fuser -k 3000/tcp 2>/dev/null || true
+            sleep 2
+
+            # Build e start
+            docker compose up -d --build
+
+            # Aguardar App ficar healthy
+            echo "Aguardando App Next.js..."
+            for i in {1..60}; do
+              if curl -sf http://localhost:3000 > /dev/null 2>&1; then
+                echo "App pronto!"
+                break
+              fi
+              echo "Aguardando App... ($i/60)"
+              sleep 2
+            done
+
+            # Verificar logs
+            docker compose logs --tail=20 web
