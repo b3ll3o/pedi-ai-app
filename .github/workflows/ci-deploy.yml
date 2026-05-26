@@ -88,8 +88,8 @@ jobs:
             # Pull latest changes
             git pull origin main
 
-            # Build com NEXT_PUBLIC_API_URL apontando para localhost
-            NEXT_PUBLIC_API_URL=http://localhost:3001 npm ci
+            # Build com NEXT_PUBLIC_API_URL apontando para /api (nginx proxy)
+            NEXT_PUBLIC_API_URL=/api npm ci
             npm run build
 
             # Copiar e instalar serviço systemd
