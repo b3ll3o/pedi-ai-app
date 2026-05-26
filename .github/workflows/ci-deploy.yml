@@ -29,7 +29,7 @@ jobs:
         with:
           node-version: 20
           cache: 'npm'
-          cache-dependency-path: pedi-ai-app/package-lock.json
+          cache-dependency-path: package-lock.json
 
       - name: Instalar dependências
         run: npm ci
@@ -78,7 +78,7 @@ jobs:
             cd pedi-ai-app
 
             # Pull latest changes
-            git pull origin master
+            git pull origin main
 
             # Parar serviços existentes
             docker compose down || true
