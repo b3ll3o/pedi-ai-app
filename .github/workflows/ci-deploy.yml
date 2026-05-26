@@ -99,12 +99,30 @@ jobs:
             docker compose down 2>/dev/null || true
             systemctl disable pedi-ai-app 2>/dev/null || true
             fuser -k 3000/tcp 2>/dev/null || true
-            sleep 2
+            lsof -ti:3000 | xargs -r kill -9 2>/dev/null || true
+            sleep 3
+
+            # Criar .env se não existir (temporário)
+            if [ ! -f /root/pedi-ai-app/.env ]; then
+              echo "ATENÇÃO: .env não encontrado, criando temporário..."
+              echo "NEXT_PUBLIC_API_URL=http://localhost:3001" > /root/pedi-ai-app/.env
+              echo "NODE_ENV=production" >> /root/pedi-ai-app/.env
+              echo "PORT=3000" >> /root/pedi-ai-app/.env
+              echo "HOST=0.0.0.0" >> /root/pedi-ai-app/.env
+            fi
 
             # Recarregar e iniciar serviço systemd
             systemctl daemon-reload
             systemctl enable pedi-ai-app
             systemctl restart pedi-ai-app
+
+            # Ver logs se falhar
+            sleep 3
+            if ! systemctl is-active --quiet pedi-ai-app; then
+              echo "=== Logs do systemd ==="
+              journalctl -u pedi-ai-app --no-pager -n 50 || true
+              systemctl status pedi-ai-app --no-pager || true
+            fi
 
             # Aguardar App ficar ready
             echo "Aguardando App Next.js..."
