@@ -44,32 +44,30 @@ describe('Table', () => {
 
 describe('TableRow', () => {
   it('renders tr element', () => {
-    render(<TableRow><td>Content</td></TableRow>);
+    render(<table><TableRow><td>Content</td></TableRow></table>);
     expect(screen.getByRole('row')).toBeInTheDocument();
   });
 
   it('renders children content', () => {
-    render(<TableRow><td>Test Content</td></TableRow>);
+    render(<table><TableRow><td>Test Content</td></TableRow></table>);
     expect(screen.getByText('Test Content')).toBeInTheDocument();
   });
 
   it('applies hover class', () => {
-    render(<TableRow><td>Hover</td></TableRow>);
+    render(<table><TableRow><td>Hover</td></TableRow></table>);
     expect(screen.getByRole('row')).toHaveClass('hover:bg-background/50');
   });
 
   it('handles onClick prop', () => {
     const handleClick = jest.fn();
     render(
-      <TableRow onClick={handleClick}>
-        <td>Clickable</td>
-      </TableRow>
+      <table><TableRow onClick={handleClick}><td>Clickable</td></TableRow></table>
     );
     expect(screen.getByRole('row')).toHaveClass('cursor-pointer');
   });
 
   it('applies custom className', () => {
-    render(<TableRow className="custom-row"><td>Custom</td></TableRow>);
+    render(<table><TableRow className="custom-row"><td>Custom</td></TableRow></table>);
     expect(screen.getByRole('row')).toHaveClass('custom-row');
   });
 });

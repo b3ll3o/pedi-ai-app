@@ -38,7 +38,7 @@ describe('UI Components Index', () => {
   });
 
   it('exports TableRow', () => {
-    render(<TableRow><td>Row Data</td></TableRow>);
+    render(<table><TableRow><td>Row Data</td></TableRow></table>);
     expect(screen.getByRole('row')).toBeInTheDocument();
   });
 });
