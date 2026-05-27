@@ -28,7 +28,7 @@ export function UsuarioList() {
     }
   };
 
-  // eslint-disable-next-line react-hooks/set-state-in-effect -- padrão de auto-load ao montar
+  // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => {
     carregarUsuarios();
   }, []);
