@@ -31,6 +31,7 @@ const config = {
     '/components/Sidebar',
     '/components/ui/index',
     '/components/ui/UsuarioList',
+    '/components/seo/',
   ],
 };
 
