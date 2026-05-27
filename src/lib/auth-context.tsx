@@ -47,7 +47,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const storedUser = localStorage.getItem(USER_KEY);
 
     if (storedToken && storedUser) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect -- localStorage é leitura sincrona de platform API, padrão aceito
       setAccessToken(storedToken);
       setUser(JSON.parse(storedUser));
     }

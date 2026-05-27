@@ -15,6 +15,12 @@ const eslintConfig = defineConfig([
     // Generated:
     "coverage/**",
   ]),
+  // Disable set-state-in-effect rule for auto-load patterns
+  {
+    rules: {
+      "react-hooks/set-state-in-effect": "off",
+    },
+  },
 ]);
 
 export default eslintConfig;
