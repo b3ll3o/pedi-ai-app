@@ -122,6 +122,10 @@ jobs:
             npm ci
             npm run build
 
+            # Copiar arquivos estáticos para o standalone (Next.js standalone não os inclui automaticamente)
+            cp -r .next/static ./standalone/.next/
+            cp -r .next/server/app ./standalone/.next/server/ 2>/dev/null || true
+
             # Copiar serviço systemd
             cp deploy/pedi-ai-app.service /etc/systemd/system/
 
