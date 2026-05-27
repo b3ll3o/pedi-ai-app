@@ -24,65 +24,63 @@ npm run test:coverage # Com cobertura
 
 ---
 
-## Arquitetura DDD (Domain-Driven Design)
+## Arquitetura Atual
 
-Este projeto utiliza **Domain-Driven Design** orientado a features com Next.js App Router. Cada domínio (bounded context) é uma feature isolada.
-
-### Estrutura por Feature/Domínio
+Estrutura do projeto usando Next.js App Router:
 
 ```
 src/
-└── features/                      # Features organizadas por domínio
-    └── <dominio>/                 # Bounded Context (ex: autenticacao, cardapio)
-        ├── domain/               # Modelo de domínio do frontend
-        │   ├── entities/         # Entidades do domínio (tipos/classes)
-        │   ├── types/            # Types e interfaces do domínio
-        │   ├── hooks/            # Hooks de domínio (useUsuario, etc)
-        │   └── services/         # Serviços de domínio (validação, etc)
-        ├── application/          # Lógica de aplicação
-        │   ├── hooks/            # Hooks de aplicação (useCriarPedido, etc)
-        │   └── services/         # Serviços de aplicação
-        ├── infrastructure/       # Implementações externas
-        │   └── api/              # Chamadas à API (fetch, mutations)
-        └── presentation/         # UI do domínio
-            ├── components/       # Componentes específicos do domínio
-            └── pages/            # Pages do domínio (se não usar app/)
+├── app/                    # App Router (rotas e layouts)
+│   ├── dashboard/         # Dashboard (protegido)
+│   ├── login/             # Página de login
+│   ├── perfis/            # Gerenciamento de perfis
+│   ├── permissoes/        # Gerenciamento de permissões
+│   ├── usuarios/          # Gerenciamento de usuários
+│   ├── layout.tsx         # Layout raiz
+│   └── page.tsx           # Página inicial
+├── components/             # Componentes compartilhados
+│   ├── auth/              # ProtectedRoute, etc
+│   ├── dashboard/         # Sidebar, DashboardLayout, etc
+│   ├── ui/                # Button, Input, Card, Badge, etc
+│   ├── MainLayout.tsx
+│   └── Sidebar.tsx
+└── lib/                    # Utilitários (api client, utils)
 ```
 
-### Estrutura Global
+---
+
+## Estrutura DDD-alvo (para novos domínios)
+
+Para novos domínios, seguir estrutura DDD orientada a features:
 
 ```
-src/
-├── features/               # Features DDD (autenticacao, cardapio, pedido, usuario)
-├── components/
-│   └── ui/                 # Componentes compartilhados (Button, Input, Card, Badge)
-├── lib/                    # Utilitários compartilhados (api client, utils)
-├── hooks/                  # Hooks globais
-└── app/                    # App Router (layouts, pages, API routes)
+src/features/
+└── <dominio>/
+    ├── domain/               # Modelo de domínio do frontend
+    │   ├── types/            # Types e interfaces do domínio
+    │   └── hooks/            # Hooks de domínio
+    ├── application/          # Lógica de aplicação
+    │   └── hooks/            # Hooks de aplicação
+    ├── infrastructure/       # Implementações externas
+    │   └── api/              # Chamadas à API
+    └── presentation/         # UI do domínio
+        └── components/       # Componentes específicos
 ```
 
 ### Domínios Identificados
 
-| Domínio | Descrição | Feature Folder |
-|---------|-----------|----------------|
-| `autenticacao` | Autenticação e autorização | `features/autenticacao/` |
-| `cardapio` | Cardápio e itens | `features/cardapio/` |
-| `pedido` | Pedidos | `features/pedido/` |
-| `usuario` | Usuários do sistema | `features/usuario/` |
-
-### Terminologia DDD (Frontend)
-
-| Conceito | Descrição | Implementação |
-|----------|-----------|---------------|
-| **Entity** | Modelo de dados do domínio | Types/Interfaces em `domain/types/` |
-| **Domain Hook** | Lógica de domínio (validação, computação) | `domain/hooks/use*.ts` |
-| **Application Hook** | Orchestrates use cases | `application/hooks/use*.ts` |
-| **Infrastructure API** | Comunicação com backend | `infrastructure/api/*.ts` |
-| **Presentation Component** | UI do domínio | `presentation/components/*.tsx` |
+| Domínio | Descrição | Localização |
+|---------|-----------|-------------|
+| `autenticacao` | Autenticação e autorização | `src/app/login/`, `src/components/auth/` |
+| `usuario` | Usuários do sistema | `src/app/usuarios/` |
+| `perfil` | Perfis de usuário | `src/app/perfis/` |
+| `permissao` | Permissões de acesso | `src/app/permissoes/` |
 
 ---
 
-## OpenSpec-SDD Workflow
+## OpenSpec-SDD + DDD Workflow
+
+Este projeto utiliza **OpenSpec / Specification-Driven Development** com **Domain-Driven Design** para novos domínios.
 
 ### Classificação por Impacto
 
@@ -118,7 +116,7 @@ src/
 ### Regras Obrigatórias
 
 1. **Spec first** — ANTES de escrever código, a especificação DEVE existir em `openspec/specs/`
-2. **DDD** — TODO código DEVE seguir Domain-Driven Design organizado por features
+2. **DDD** — Novos domínios DEVEM seguir Domain-Driven Design organizado por features
 3. **Classificação** — Toda spec DEVE ter tipo (minor/standard/major) e estado definido
 4. **Proposta** — Mudanças `standard` e `major` DEVEM ter proposta em `openspec/changes/<feature>/proposal.md`
 5. **Design** — Mudanças `major` DEVEM ter design documentado em `openspec/changes/<feature>/design.md`
@@ -196,11 +194,9 @@ Situação atual, problema.
 features/<dominio>/
 ├── domain/
 │   ├── types/              # Entidades (types/interfaces)
-│   ├── hooks/              # Hooks de domínio
-│   └── services/           # Serviços de domínio
+│   └── hooks/              # Hooks de domínio
 ├── application/
-│   ├── hooks/              # Hooks de aplicação
-│   └── services/           # Serviços de aplicação
+│   └── hooks/              # Hooks de aplicação
 ├── infrastructure/
 │   └── api/                # Chamadas à API
 └── presentation/
@@ -282,14 +278,9 @@ openspec/
 
 ## Padrões de Código
 
-### Features
--命名: kebab-case (ex: autenticacao, cardapio, pedido)
-- Structure: `domain/`, `application/`, `infrastructure/`, `presentation/`
-- Imports via feature barrel exports (index.ts)
-
-### Components
+### Componentes
 -命名: PascalCase
-- Localizados em `presentation/components/`
+- Localizados em `presentation/components/` ou `src/components/`
 - Devem usar componentes de `components/ui/`
 
 ### Hooks
@@ -299,8 +290,8 @@ openspec/
 
 ### Types/Entities
 -命名: PascalCase
-- Definidos em `domain/types/`
-- Exportados via `domain/types/index.ts`
+- Definidos em `domain/types/` para novos módulos
+- Exportados via barrel exports
 
 ---
 
@@ -327,7 +318,7 @@ openspec/
 
 ---
 
-## Responsabilidades por Camada
+## Responsabilidades por Camada (DDD)
 
 | Camada | Responsabilidade | Não fazer |
 |--------|-----------------|-----------|
