@@ -33,7 +33,7 @@ export function Sidebar() {
     <>
       {/* Mobile: Fixed bottom navigation bar */}
       <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-50 bg-surface border-t border-border safe-area-bottom">
-        <div className="flex items-center justify-around py-2">
+        <div className="flex items-center justify-between px-2">
           {menuItems.map((item) => {
             const active = isActive(item.href);
             const Icon = item.icon;
@@ -41,23 +41,23 @@ export function Sidebar() {
               <Link
                 key={item.href}
                 href={item.href}
-                className={`flex flex-col items-center gap-1 px-4 py-2 rounded-lg transition-colors ${
+                className={`flex flex-col items-center gap-1 px-2 py-2 rounded-lg transition-colors ${
                   active
                     ? 'text-primary'
                     : 'text-text-secondary hover:text-text-primary'
                 }`}
               >
-                <Icon className="w-6 h-6" aria-hidden="true" />
+                <Icon className="w-5 h-5" aria-hidden="true" />
                 <span className="text-xs font-medium">{item.label}</span>
               </Link>
             );
           })}
           <button
             onClick={handleLogout}
-            className="flex flex-col items-center gap-1 px-4 py-2 rounded-lg text-text-secondary hover:text-error transition-colors"
+            className="flex flex-col items-center gap-1 px-2 py-2 rounded-lg text-text-secondary hover:text-error transition-colors"
             title="Sair"
           >
-            <LogOut className="w-6 h-6" aria-hidden="true" />
+            <LogOut className="w-5 h-5" aria-hidden="true" />
             <span className="text-xs font-medium">Sair</span>
           </button>
         </div>
