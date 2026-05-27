@@ -43,7 +43,7 @@ export function Sidebar() {
         className={`
           fixed inset-y-0 left-0 z-50 w-64 h-screen bg-secondary text-white flex flex-col
           transform transition-transform duration-300 ease-in-out
-          lg:static lg:translate-x-0 lg:min-h-screen lg:w-64 lg:z-auto lg:h-auto
+          lg:static lg:translate-x-0 lg:w-64 lg:min-h-screen lg:flex lg:flex-col lg:shrink-0
           ${isOpen ? 'translate-x-0' : '-translate-x-full'}
         `}
       >
@@ -83,7 +83,7 @@ export function Sidebar() {
           </ul>
         </nav>
 
-        <div className="flex-none border-t border-secondary-light">
+        <div className="mt-auto flex-none border-t border-secondary-light">
           <button
             onClick={handleLogout}
             className="w-full flex items-center gap-3 px-6 py-4 text-gray-300 hover:bg-secondary-light hover:text-white transition-colors"

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button, Input } from '@/components/ui';
 import { api, Permissao } from '@/lib/api';
@@ -63,6 +63,10 @@ export default function PermissoesPage() {
     const formatted = value.toUpperCase().replace(/[^A-Z0-9_]/g, '_');
     setNovaChave(formatted);
   };
+
+  useEffect(() => {
+    carregarPermissoes();
+  }, []);
 
   return (
     <div>
@@ -136,59 +140,61 @@ export default function PermissoesPage() {
       )}
 
       <div className="bg-surface rounded-2xl shadow-sm border border-border overflow-hidden">
-        {permissoes.length === 0 && !loading ? (
-          <div className="py-16 text-center">
-            <Key className="w-16 h-16 text-text-secondary/30 mx-auto mb-4" />
-            <p className="text-text-secondary mb-4">Nenhuma permissão encontrada</p>
-            <Button variant="secondary" onClick={carregarPermissoes}>
-              <RefreshCw className="w-4 h-4 mr-2" />
-              Carregar Permissões
-            </Button>
-          </div>
-        ) : (
-          <table className="w-full">
-            <thead className="bg-background/50">
-              <tr>
-                <th className="px-4 py-3 text-left text-sm font-semibold text-text-primary">Nome</th>
-                <th className="px-4 py-3 text-left text-sm font-semibold text-text-primary">Chave</th>
-                <th className="px-4 py-3 text-left text-sm font-semibold text-text-primary">Descrição</th>
-                <th className="px-4 py-3 text-right text-sm font-semibold text-text-primary">Ações</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-border">
-              {permissoes.map((permissao) => (
-                <tr key={permissao.id} className="hover:bg-background/30 transition-colors">
-                  <td className="px-4 py-4">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-xl bg-secondary/10 flex items-center justify-center">
-                        <Key className="w-5 h-5 text-secondary" />
-                      </div>
-                      <span className="font-medium text-text-primary">{permissao.nome}</span>
-                    </div>
-                  </td>
-                  <td className="px-4 py-4">
-                    <code className="px-2 py-1 bg-background rounded text-sm font-mono text-text-secondary">
-                      {permissao.chave}
-                    </code>
-                  </td>
-                  <td className="px-4 py-4 text-sm text-text-secondary">
-                    {permissao.descricao || <span className="text-text-secondary/50">Sem descrição</span>}
-                  </td>
-                  <td className="px-4 py-4">
-                    <div className="flex justify-end gap-2">
-                      <Button variant="ghost" size="sm" onClick={() => router.push(`/dashboard/permissoes/${permissao.id}`)}>
-                        <Edit2 className="w-4 h-4" />
-                      </Button>
-                      <Button variant="ghost" size="sm" onClick={() => handleDelete(permissao.id, permissao.nome)} className="text-error hover:bg-error/10">
-                        <Trash2 className="w-4 h-4" />
-                      </Button>
-                    </div>
-                  </td>
+        <div className="overflow-x-auto">
+          {permissoes.length === 0 && !loading ? (
+            <div className="py-16 text-center min-w-full">
+              <Key className="w-16 h-16 text-text-secondary/30 mx-auto mb-4" />
+              <p className="text-text-secondary mb-4">Nenhuma permissão encontrada</p>
+              <Button variant="secondary" onClick={carregarPermissoes}>
+                <RefreshCw className="w-4 h-4 mr-2" />
+                Carregar Permissões
+              </Button>
+            </div>
+          ) : (
+            <table className="w-full">
+              <thead className="bg-background/50">
+                <tr>
+                  <th className="px-4 py-3 text-left text-sm font-semibold text-text-primary">Nome</th>
+                  <th className="px-4 py-3 text-left text-sm font-semibold text-text-primary">Chave</th>
+                  <th className="px-4 py-3 text-left text-sm font-semibold text-text-primary">Descrição</th>
+                  <th className="px-4 py-3 text-right text-sm font-semibold text-text-primary">Ações</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        )}
+              </thead>
+              <tbody className="divide-y divide-border">
+                {permissoes.map((permissao) => (
+                  <tr key={permissao.id} className="hover:bg-background/30 transition-colors">
+                    <td className="px-4 py-4">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-xl bg-secondary/10 flex items-center justify-center">
+                          <Key className="w-5 h-5 text-secondary" />
+                        </div>
+                        <span className="font-medium text-text-primary">{permissao.nome}</span>
+                      </div>
+                    </td>
+                    <td className="px-4 py-4">
+                      <code className="px-2 py-1 bg-background rounded text-sm font-mono text-text-secondary">
+                        {permissao.chave}
+                      </code>
+                    </td>
+                    <td className="px-4 py-4 text-sm text-text-secondary">
+                      {permissao.descricao || <span className="text-text-secondary/50">Sem descrição</span>}
+                    </td>
+                    <td className="px-4 py-4">
+                      <div className="flex justify-end gap-2">
+                        <Button variant="ghost" size="sm" onClick={() => router.push(`/dashboard/permissoes/${permissao.id}`)}>
+                          <Edit2 className="w-4 h-4" />
+                        </Button>
+                        <Button variant="ghost" size="sm" onClick={() => handleDelete(permissao.id, permissao.nome)} className="text-error hover:bg-error/10">
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
+        </div>
       </div>
     </div>
   );
