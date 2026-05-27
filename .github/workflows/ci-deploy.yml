@@ -122,8 +122,17 @@ jobs:
             npm ci
             npm run build
 
-            # Copiar e instalar serviço systemd
+            # Copiar serviço systemd
             cp deploy/pedi-ai-app.service /etc/systemd/system/
+
+            # DETECTAR standalone mode e ajustar ExecStart
+            if grep -q '"standalone"' /root/pedi-ai-app/next.config.ts 2>/dev/null; then
+              echo "Detectado output: standalone - ajustando comando de start..."
+              sed -i 's|ExecStart=.*|ExecStart=/usr/bin/node .next/standalone/server.js|' /etc/systemd/system/pedi-ai-app.service
+              echo "Usando standalone server (memory efficient)"
+            else
+              echo "Modo padrão detectado - usando next start"
+            fi
 
             # Parar e desabilitar container Docker (se existir)
             docker compose down 2>/dev/null || true
@@ -176,7 +185,50 @@ jobs:
             # Remover configs conflitantes antes de criar o novo
             sudo rm -f /etc/nginx/sites-enabled/pedi-ai /etc/nginx/sites-available/andreazzi.tech /etc/nginx/sites-enabled/andreazzi.tech 2>/dev/null || true
 
-            printf 'server {\n    listen 80;\n    server_name andreazzi.tech;\n\n    location /api/ {\n        proxy_pass http://127.0.0.1:3001/;\n        proxy_http_version 1.1;\n        proxy_set_header Upgrade $http_upgrade;\n        proxy_set_header Connection '"'"'upgrade'"'"';\n        proxy_set_header Host $host;\n        proxy_set_header X-Real-IP $remote_addr;\n        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;\n        proxy_set_header X-Forwarded-Proto $scheme;\n        proxy_cache_bypass $http_upgrade;\n    }\n\n    location / {\n        proxy_pass http://127.0.0.1:3000;\n        proxy_http_version 1.1;\n        proxy_set_header Upgrade $http_upgrade;\n        proxy_set_header Connection '"'"'upgrade'"'"';\n        proxy_set_header Host $host;\n        proxy_set_header X-Real-IP $remote_addr;\n        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;\n        proxy_set_header X-Forwarded-Proto $scheme;\n        proxy_cache_bypass $http_upgrade;\n    }\n}\n' | sudo tee /etc/nginx/sites-available/andreazzi.tech > /dev/null
+            # NGINX com SSL (HTTP→HTTPS redirect + HTTPS na porta 443)
+            cat << 'NGINX_EOF' | sudo tee /etc/nginx/sites-available/andreazzi.tech > /dev/null
+server {
+    listen 80;
+    server_name andreazzi.tech;
+    return 301 https://$server_name$request_uri;
+}
+
+server {
+    listen 443 ssl http2;
+    server_name andreazzi.tech;
+
+    ssl_certificate /etc/letsencrypt/live/andreazzi.tech/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/andreazzi.tech/privkey.pem;
+    include /etc/letsencrypt/options-ssl-nginx.conf;
+    ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem;
+
+    client_max_body_size 10M;
+
+    location /api/ {
+        proxy_pass http://127.0.0.1:3001/;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection 'upgrade';
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_cache_bypass $http_upgrade;
+    }
+
+    location / {
+        proxy_pass http://127.0.0.1:3000;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection 'upgrade';
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_cache_bypass $http_upgrade;
+    }
+}
+NGINX_EOF
 
             sudo ln -sf /etc/nginx/sites-available/andreazzi.tech /etc/nginx/sites-enabled/
             sudo rm -f /etc/nginx/sites-enabled/default 2>/dev/null || true
@@ -186,8 +238,13 @@ jobs:
 
             # Verificar se config foi aplicado corretamente
             echo "=== Verificando config do nginx ==="
-            ssh_retry "grep -A2 'location /api/' /etc/nginx/sites-available/andreazzi.tech" || echo "ERRO: nginx config incorreto!"
-            echo "Nginx configurado para andreazzi.tech!"
+            ssh_retry "grep -A2 'listen 443' /etc/nginx/sites-available/andreazzi.tech" || echo "ERRO: nginx config incorreto!"
+            echo "Nginx configurado para andreazzi.tech com SSL!"
 
             # Verificar status
+            echo "=== Status do App ==="
             systemctl status pedi-ai-app --no-pager
+
+            # Verificar se App está respondendo via HTTPS
+            echo "=== Health Check HTTPS ==="
+            curl -sf https://localhost:3000 > /dev/null && echo "App responds on HTTPS!" || echo "App not responding on HTTPS"
