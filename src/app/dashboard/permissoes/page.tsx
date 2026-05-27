@@ -64,6 +64,7 @@ export default function PermissoesPage() {
     setNovaChave(formatted);
   };
 
+  // eslint-disable-next-line react-hooks/set-state-in-effect -- padrão de auto-load ao montar
   useEffect(() => {
     carregarPermissoes();
   }, []);

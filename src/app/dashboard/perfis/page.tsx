@@ -57,6 +57,7 @@ export default function PerfisPage() {
     }
   };
 
+  // eslint-disable-next-line react-hooks/set-state-in-effect -- padrão de auto-load ao montar
   useEffect(() => {
     carregarPerfis();
   }, []);
