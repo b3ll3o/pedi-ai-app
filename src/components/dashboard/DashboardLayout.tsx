@@ -67,7 +67,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
             </div>
             <h1 className="text-xl sm:text-2xl font-bold text-text-primary">{title}</h1>
           </header>
-          <main className="flex-1 p-4 sm:p-6 overflow-auto">
+          <main className="flex-1 p-4 sm:p-6 pb-20 lg:pb-6 overflow-auto">
             {children}
           </main>
         </div>
