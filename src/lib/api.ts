@@ -111,6 +111,44 @@ export interface AtualizarPerfilDto {
   descricao?: string;
 }
 
+export interface Restaurante {
+  id: string;
+  nome: string;
+  cnpj: string;
+  endereco: string;
+  cidade: string;
+  estado: string;
+  cep: string;
+  horarioAbertura: string;
+  horarioFechamento: string;
+  createdAt: string;
+  updatedAt: string;
+  deletedAt: string | null;
+  version: number;
+}
+
+export interface CriarRestauranteDto {
+  nome: string;
+  cnpj: string;
+  endereco: string;
+  cidade: string;
+  estado: string;
+  cep: string;
+  horarioAbertura: string;
+  horarioFechamento: string;
+}
+
+export interface AtualizarRestauranteDto {
+  nome?: string;
+  cnpj?: string;
+  endereco?: string;
+  cidade?: string;
+  estado?: string;
+  cep?: string;
+  horarioAbertura?: string;
+  horarioFechamento?: string;
+}
+
 function getAuthHeaders(): HeadersInit {
   const token = localStorage.getItem(ACCESS_TOKEN_KEY);
   return token ? { Authorization: `Bearer ${token}` } : {};
@@ -263,6 +301,31 @@ export const api = {
 
     desassociarPermissao: (id: string, permissaoId: string) =>
       fetchJson<void>(`${API_URL}/perfis/${id}/permissoes/${permissaoId}`, {
+        method: 'DELETE',
+      }),
+  },
+
+  restaurantes: {
+    listarTodos: () =>
+      fetchJson<Restaurante[]>(`${API_URL}/restaurants`),
+
+    listarUm: (id: string) =>
+      fetchJson<Restaurante>(`${API_URL}/restaurants/${id}`),
+
+    criar: (data: CriarRestauranteDto) =>
+      fetchJson<Restaurante>(`${API_URL}/restaurants`, {
+        method: 'POST',
+        body: JSON.stringify(data),
+      }),
+
+    atualizar: (id: string, data: AtualizarRestauranteDto) =>
+      fetchJson<Restaurante>(`${API_URL}/restaurants/${id}`, {
+        method: 'PATCH',
+        body: JSON.stringify(data),
+      }),
+
+    deletar: (id: string) =>
+      fetchJson<void>(`${API_URL}/restaurants/${id}`, {
         method: 'DELETE',
       }),
   },

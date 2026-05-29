@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { Home, Users, Shield, Key, LogOut } from 'lucide-react';
+import { Home, Users, Shield, Key, Building2, LogOut } from 'lucide-react';
 import { useAuth } from '@/lib/auth-context';
 
 const menuItems = [
@@ -10,6 +10,7 @@ const menuItems = [
   { href: '/dashboard/usuarios', label: 'Usuários', icon: Users },
   { href: '/dashboard/perfis', label: 'Perfis', icon: Shield },
   { href: '/dashboard/permissoes', label: 'Permissões', icon: Key },
+  { href: '/restaurantes', label: 'Restaurantes', icon: Building2 },
 ];
 
 export function Sidebar() {

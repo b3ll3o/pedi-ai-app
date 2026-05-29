@@ -5,3 +5,5 @@ export { StatusBadge } from './StatusBadge';
 export { Input } from './Input';
 export { Table, TableRow } from './Table';
 export { UsuarioList } from './UsuarioList';
+export { RestauranteList } from './RestauranteList';
+export { RestauranteForm } from './RestauranteForm';

@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
-import { Users, Shield, Key, ArrowRight, RefreshCw } from 'lucide-react';
+import { Users, Shield, Key, ArrowRight, RefreshCw, Building2 } from 'lucide-react';
 import { api } from '@/lib/api';
 import { Card } from '@/components/ui';
 
@@ -61,6 +61,13 @@ export default function DashboardPage() {
       icon: Key,
       href: '/dashboard/permissoes',
       color: 'bg-warning/10 text-warning',
+    },
+    {
+      label: 'Restaurantes',
+      value: '-',
+      icon: Building2,
+      href: '/restaurantes',
+      color: 'bg-success/10 text-success',
     },
   ];
 
