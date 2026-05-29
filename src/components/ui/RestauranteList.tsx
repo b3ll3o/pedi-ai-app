@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { api, Restaurante } from '@/lib/api';
 import { Button } from '@/components/ui';
 import { Building2, RefreshCw, Trash2 } from 'lucide-react';
@@ -17,7 +17,7 @@ export function RestauranteList({ onEditar, onDeletar, loadingExterno, restauran
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const carregarRestaurantes = async () => {
+  const carregarRestaurantes = useCallback(async () => {
     if (loadingExterno !== undefined) return;
 
     setLoading(true);
@@ -30,7 +30,7 @@ export function RestauranteList({ onEditar, onDeletar, loadingExterno, restauran
     } finally {
       setLoading(false);
     }
-  };
+  }, [loadingExterno]);
 
   useEffect(() => {
     if (restaurantesExternos !== undefined) {
@@ -38,7 +38,7 @@ export function RestauranteList({ onEditar, onDeletar, loadingExterno, restauran
     } else {
       carregarRestaurantes();
     }
-  }, [restaurantesExternos]);
+  }, [restaurantesExternos, carregarRestaurantes]);
 
   const handleDelete = async (id: string, nome: string) => {
     if (!confirm(`Deseja excluir o restaurante "${nome}"?`)) return;
