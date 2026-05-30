@@ -36,7 +36,6 @@ function validateCNPJ(cnpj: string): boolean {
   const digits = cnpj.replace(/\D/g, '');
   if (digits.length !== 14) return false;
 
-  // Validação de dígito verificador
   const weights1 = [5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2];
   const weights2 = [6, 5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2];
 
@@ -53,6 +52,12 @@ function validateCNPJ(cnpj: string): boolean {
   const d2 = calcDigit(digits.slice(0, 13), weights2);
 
   return d1 === parseInt(digits[12]) && d2 === parseInt(digits[13]);
+}
+
+function formatCEP(value: string): string {
+  const digits = value.replace(/\D/g, '');
+  if (digits.length <= 5) return digits;
+  return `${digits.slice(0, 5)}-${digits.slice(5, 8)}`;
 }
 
 export function RestauranteForm({
@@ -77,6 +82,11 @@ export function RestauranteForm({
     setCnpj(formatted);
   };
 
+  const handleCEPChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const formatted = formatCEP(e.target.value);
+    setCep(formatted);
+  };
+
   const validate = (): boolean => {
     const newErrors: Record<string, string> = {};
 
@@ -91,6 +101,9 @@ export function RestauranteForm({
     if (!horarioAbertura.trim()) newErrors.horarioAbertura = 'Horário de abertura é obrigatório';
     if (!horarioFechamento.trim())
       newErrors.horarioFechamento = 'Horário de fechamento é obrigatório';
+    if (horarioAbertura && horarioFechamento && horarioAbertura >= horarioFechamento) {
+      newErrors.horarioFechamento = 'Horário de fechamento deve ser após abertura';
+    }
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -176,9 +189,10 @@ export function RestauranteForm({
         <Input
           label="CEP"
           value={cep}
-          onChange={(e) => setCep(e.target.value)}
+          onChange={handleCEPChange}
           placeholder="XXXXX-XXX"
           error={errors.cep}
+          maxLength={9}
           required
         />
       </div>

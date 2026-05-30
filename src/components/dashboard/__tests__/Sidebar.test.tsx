@@ -29,7 +29,12 @@ describe('Sidebar', () => {
 
   it('renders sidebar with logo on desktop', () => {
     (useAuth as jest.Mock).mockReturnValue({
-      user: { id: '1', nome: 'Test User', email: 'test@test.com' },
+      user: {
+        id: '1',
+        nome: 'Test User',
+        email: 'test@test.com',
+        perfil: { id: '1', nome: 'ADMIN' },
+      },
       logout: mockLogout,
     });
 
@@ -41,7 +46,12 @@ describe('Sidebar', () => {
 
   it('renders navigation menu items', () => {
     (useAuth as jest.Mock).mockReturnValue({
-      user: { id: '1', nome: 'Test User', email: 'test@test.com' },
+      user: {
+        id: '1',
+        nome: 'Test User',
+        email: 'test@test.com',
+        perfil: { id: '1', nome: 'ADMIN' },
+      },
       logout: mockLogout,
     });
 
@@ -58,7 +68,12 @@ describe('Sidebar', () => {
 
   it('renders user info', () => {
     (useAuth as jest.Mock).mockReturnValue({
-      user: { id: '1', nome: 'John Doe', email: 'john@test.com' },
+      user: {
+        id: '1',
+        nome: 'John Doe',
+        email: 'john@test.com',
+        perfil: { id: '1', nome: 'ADMIN' },
+      },
       logout: mockLogout,
     });
 
@@ -70,7 +85,12 @@ describe('Sidebar', () => {
 
   it('calls logout and redirects to /login when logout button is clicked', () => {
     (useAuth as jest.Mock).mockReturnValue({
-      user: { id: '1', nome: 'Test User', email: 'test@test.com' },
+      user: {
+        id: '1',
+        nome: 'Test User',
+        email: 'test@test.com',
+        perfil: { id: '1', nome: 'ADMIN' },
+      },
       logout: mockLogout,
     });
 
@@ -85,7 +105,12 @@ describe('Sidebar', () => {
 
   it('highlights active menu item', () => {
     (useAuth as jest.Mock).mockReturnValue({
-      user: { id: '1', nome: 'Test User', email: 'test@test.com' },
+      user: {
+        id: '1',
+        nome: 'Test User',
+        email: 'test@test.com',
+        perfil: { id: '1', nome: 'ADMIN' },
+      },
       logout: mockLogout,
     });
 

@@ -17,6 +17,9 @@ jest.mock('@/lib/api', () => ({
     permissoes: {
       listarTodos: jest.fn().mockResolvedValue([{ id: '1', nome: 'Create', chave: 'CREATE' }]),
     },
+    restaurantes: {
+      listarTodos: jest.fn().mockResolvedValue([{ id: '1', nome: 'Restaurante 1' }]),
+    },
   },
 }));
 
@@ -25,12 +28,13 @@ describe('DashboardPage', () => {
     render(<DashboardPage />);
 
     await waitFor(() => {
-      expect(screen.getByText('Visão Geral')).toBeInTheDocument();
+      expect(screen.getByText('Dashboard')).toBeInTheDocument();
     });
 
     expect(screen.getByText('Usuários')).toBeInTheDocument();
     expect(screen.getByText('Perfis')).toBeInTheDocument();
     expect(screen.getByText('Permissões')).toBeInTheDocument();
+    expect(screen.getByText('Restaurantes')).toBeInTheDocument();
   });
 
   it('renders quick access cards', async () => {

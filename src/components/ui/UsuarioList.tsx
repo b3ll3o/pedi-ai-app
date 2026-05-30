@@ -3,11 +3,15 @@
 import { useState, useEffect } from 'react';
 import { api, Usuario } from '@/lib/api';
 import { Button, Input } from '@/components/ui';
-import { User, Plus, RefreshCw, Trash2, Edit2, X } from 'lucide-react';
+import { User, Plus, RefreshCw, Trash2, Edit2, X, Users } from 'lucide-react';
 
-export function UsuarioList() {
+interface UsuarioListProps {
+  onUsuarioCriado?: () => void;
+}
+
+export function UsuarioList({ onUsuarioCriado }: UsuarioListProps) {
   const [usuarios, setUsuarios] = useState<Usuario[]>([]);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showModal, setShowModal] = useState(false);
   const [novoNome, setNovoNome] = useState('');
@@ -43,6 +47,7 @@ export function UsuarioList() {
       setNovoEmail('');
       setNovaSenha('');
       setShowModal(false);
+      onUsuarioCriado?.();
       await carregarUsuarios();
     } catch (err) {
       alert(err instanceof Error ? err.message : 'Erro ao criar');
@@ -62,12 +67,8 @@ export function UsuarioList() {
   };
 
   return (
-    <div>
-      <div className="flex justify-between items-center mb-6">
-        <Button variant="secondary" onClick={carregarUsuarios} loading={loading}>
-          <RefreshCw className="w-4 h-4 mr-2" />
-          Carregar
-        </Button>
+    <div className="space-y-4">
+      <div className="flex justify-end">
         <Button onClick={() => setShowModal(true)}>
           <Plus className="w-4 h-4 mr-2" />
           Novo Usuário
@@ -75,7 +76,8 @@ export function UsuarioList() {
       </div>
 
       {error && (
-        <div className="bg-error/10 border border-error/20 text-error px-4 py-3 rounded-lg mb-4">
+        <div className="bg-error/10 border border-error/20 text-error px-4 py-3 rounded-xl flex items-center gap-3">
+          <div className="w-2 h-2 rounded-full bg-error" />
           {error}
         </div>
       )}
@@ -135,41 +137,49 @@ export function UsuarioList() {
       <div className="bg-surface rounded-2xl shadow-sm border border-border overflow-hidden">
         <div className="overflow-x-auto">
           {usuarios.length === 0 && !loading ? (
-            <div className="py-16 text-center min-w-full">
-              <User className="w-16 h-16 text-text-secondary/30 mx-auto mb-4" />
-              <p className="text-text-secondary mb-4">Nenhum usuário encontrado</p>
+            <div className="py-20 text-center min-w-full">
+              <div className="w-20 h-20 rounded-full bg-primary/5 flex items-center justify-center mx-auto mb-5">
+                <Users className="w-10 h-10 text-primary/40" />
+              </div>
+              <p className="text-text-primary font-medium mb-1">Nenhum usuário cadastrado</p>
+              <p className="text-text-secondary text-sm mb-6">
+                Comece adicionando seu primeiro usuário
+              </p>
               <Button variant="secondary" onClick={carregarUsuarios}>
                 <RefreshCw className="w-4 h-4 mr-2" />
-                Carregar Usuários
+                Atualizar Lista
               </Button>
             </div>
           ) : (
             <table className="w-full">
-              <thead className="bg-background/50">
+              <thead className="bg-gradient-to-r from-background to-background/80 border-b border-border">
                 <tr>
-                  <th className="px-4 py-3 text-left text-sm font-semibold text-text-primary">
+                  <th className="px-5 py-4 text-left text-xs font-semibold text-text-secondary uppercase tracking-wider">
                     Nome
                   </th>
-                  <th className="px-4 py-3 text-left text-sm font-semibold text-text-primary">
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-text-secondary uppercase tracking-wider">
                     Email
                   </th>
-                  <th className="px-4 py-3 text-left text-sm font-semibold text-text-primary">
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-text-secondary uppercase tracking-wider">
                     Criado em
                   </th>
-                  <th className="px-4 py-3 text-right text-sm font-semibold text-text-primary">
+                  <th className="px-4 py-3 text-right text-xs font-semibold text-text-secondary uppercase tracking-wider">
                     Ações
                   </th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border">
                 {usuarios.map((usuario) => (
-                  <tr key={usuario.id} className="hover:bg-background/30 transition-colors">
-                    <td className="px-4 py-4">
-                      <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
-                          <User className="w-5 h-5 text-primary" />
+                  <tr
+                    key={usuario.id}
+                    className="hover:bg-primary/5 transition-colors duration-150 group"
+                  >
+                    <td className="px-5 py-4">
+                      <div className="flex items-center gap-4">
+                        <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary/20 to-primary/10 flex items-center justify-center shadow-sm group-hover:shadow-md group-hover:scale-105 transition-all duration-200">
+                          <User className="w-6 h-6 text-primary" />
                         </div>
-                        <span className="font-medium text-text-primary">{usuario.nome}</span>
+                        <span className="font-semibold text-text-primary">{usuario.nome}</span>
                       </div>
                     </td>
                     <td className="px-4 py-4 text-sm text-text-secondary">{usuario.email}</td>
@@ -177,7 +187,7 @@ export function UsuarioList() {
                       {new Date(usuario.createdAt).toLocaleDateString('pt-BR')}
                     </td>
                     <td className="px-4 py-4">
-                      <div className="flex justify-end gap-2">
+                      <div className="flex justify-end gap-2 opacity-80 group-hover:opacity-100 transition-opacity">
                         <Button
                           variant="ghost"
                           size="sm"
@@ -203,6 +213,18 @@ export function UsuarioList() {
             </table>
           )}
         </div>
+        {usuarios.length > 0 && (
+          <div className="px-5 py-4 bg-background/50 border-t border-border flex items-center justify-between">
+            <p className="text-sm text-text-secondary">
+              {usuarios.length} usuário{usuarios.length !== 1 ? 's' : ''} encontrado
+              {usuarios.length !== 1 ? 's' : ''}
+            </p>
+            <Button variant="ghost" size="sm" onClick={carregarUsuarios} loading={loading}>
+              <RefreshCw className={`w-4 h-4 mr-1 ${loading ? 'animate-spin' : ''}`} />
+              Atualizar
+            </Button>
+          </div>
+        )}
       </div>
     </div>
   );

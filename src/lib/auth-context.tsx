@@ -1,6 +1,6 @@
 'use client';
 
-import { createContext, useContext, useState, useEffect, useRef, ReactNode } from 'react';
+import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001';
 
@@ -41,11 +41,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<AuthUser | null>(null);
   const [accessToken, setAccessToken] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const initRef = useRef(false);
 
   useEffect(() => {
-    if (initRef.current) return;
-    initRef.current = true;
+    const abortController = new AbortController();
 
     const storedToken = localStorage.getItem(ACCESS_TOKEN_KEY);
     const storedUser = localStorage.getItem(USER_KEY);
@@ -56,6 +54,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
 
     setIsLoading(false);
+
+    return () => {
+      abortController.abort();
+    };
   }, []);
 
   const login = async (email: string, senha: string) => {

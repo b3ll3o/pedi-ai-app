@@ -4,17 +4,63 @@ import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { Home, Users, Shield, Key, Building2, LogOut } from 'lucide-react';
 import { useAuth } from '@/lib/auth-context';
+import { AdminOnly } from '@/components/auth/AdminOnly';
 
-const menuItems = [
+const menuItemsBase = [
   { href: '/dashboard', label: 'Dashboard', icon: Home },
-  { href: '/dashboard/usuarios', label: 'Usuários', icon: Users },
-  { href: '/dashboard/perfis', label: 'Perfis', icon: Shield },
-  { href: '/dashboard/permissoes', label: 'Permissões', icon: Key },
   { href: '/restaurantes', label: 'Restaurantes', icon: Building2 },
 ];
 
-export function Sidebar() {
+const adminMenuItems = [
+  { href: '/dashboard/usuarios', label: 'Usuários', icon: Users },
+  { href: '/dashboard/perfis', label: 'Perfis', icon: Shield },
+  { href: '/dashboard/permissoes', label: 'Permissões', icon: Key },
+];
+
+interface MenuItemProps {
+  href: string;
+  label: string;
+  icon: React.ComponentType<{ className?: string; 'aria-hidden'?: boolean | undefined }>;
+}
+
+function MenuItem({ href, label, icon: Icon }: MenuItemProps) {
   const pathname = usePathname();
+  const isActive = href === '/dashboard' ? pathname === href : pathname.startsWith(href);
+
+  return (
+    <li>
+      <Link
+        href={href}
+        aria-current={isActive ? 'page' : undefined}
+        className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
+          isActive ? 'bg-primary text-white' : 'text-gray-300 hover:bg-primary hover:text-white'
+        }`}
+      >
+        <Icon className="w-5 h-5" aria-hidden={true} />
+        <span className="font-medium">{label}</span>
+      </Link>
+    </li>
+  );
+}
+
+function MobileNavItem({ href, label, icon: Icon }: MenuItemProps) {
+  const pathname = usePathname();
+  const isActive = href === '/dashboard' ? pathname === href : pathname.startsWith(href);
+
+  return (
+    <Link
+      href={href}
+      className={`flex flex-col items-center gap-1 px-2 py-2 rounded-lg transition-colors ${
+        isActive ? 'text-primary' : 'text-text-secondary hover:text-text-primary'
+      }`}
+    >
+      <Icon className="w-5 h-5" aria-hidden={true} />
+      <span className="text-xs font-medium">{label}</span>
+    </Link>
+  );
+}
+
+export function Sidebar() {
   const router = useRouter();
   const { user, logout } = useAuth();
 
@@ -23,34 +69,19 @@ export function Sidebar() {
     router.push('/login');
   };
 
-  const isActive = (href: string) => {
-    if (href === '/dashboard') {
-      return pathname === href;
-    }
-    return pathname.startsWith(href);
-  };
-
   return (
     <>
       {/* Mobile: Fixed bottom navigation bar */}
       <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-50 bg-surface border-t border-border safe-area-bottom">
         <div className="flex items-center justify-between px-2">
-          {menuItems.map((item) => {
-            const active = isActive(item.href);
-            const Icon = item.icon;
-            return (
-              <Link
-                key={item.href}
-                href={item.href}
-                className={`flex flex-col items-center gap-1 px-2 py-2 rounded-lg transition-colors ${
-                  active ? 'text-primary' : 'text-text-secondary hover:text-text-primary'
-                }`}
-              >
-                <Icon className="w-5 h-5" aria-hidden="true" />
-                <span className="text-xs font-medium">{item.label}</span>
-              </Link>
-            );
-          })}
+          {menuItemsBase.map((item) => (
+            <MobileNavItem key={item.href} {...item} />
+          ))}
+          <AdminOnly>
+            {adminMenuItems.map((item) => (
+              <MobileNavItem key={item.href} {...item} />
+            ))}
+          </AdminOnly>
           <button
             onClick={handleLogout}
             className="flex flex-col items-center gap-1 px-2 py-2 rounded-lg text-text-secondary hover:text-error transition-colors"
@@ -73,26 +104,14 @@ export function Sidebar() {
 
         <nav className="flex-1 p-4 overflow-y-auto">
           <ul className="space-y-1">
-            {menuItems.map((item) => {
-              const active = isActive(item.href);
-              const Icon = item.icon;
-              return (
-                <li key={item.href}>
-                  <Link
-                    href={item.href}
-                    aria-current={active ? 'page' : undefined}
-                    className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
-                      active
-                        ? 'bg-primary text-white'
-                        : 'text-gray-300 hover:bg-secondary-light hover:text-white'
-                    }`}
-                  >
-                    <Icon className="w-5 h-5" aria-hidden="true" />
-                    <span className="font-medium">{item.label}</span>
-                  </Link>
-                </li>
-              );
-            })}
+            {menuItemsBase.map((item) => (
+              <MenuItem key={item.href} {...item} />
+            ))}
+            <AdminOnly>
+              {adminMenuItems.map((item) => (
+                <MenuItem key={item.href} {...item} />
+              ))}
+            </AdminOnly>
           </ul>
         </nav>
 

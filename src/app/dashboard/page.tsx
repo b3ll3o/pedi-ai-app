@@ -10,24 +10,32 @@ interface Stats {
   usuarios: number;
   perfis: number;
   permissoes: number;
+  restaurantes: number;
 }
 
 export default function DashboardPage() {
-  const [stats, setStats] = useState<Stats>({ usuarios: 0, perfis: 0, permissoes: 0 });
-  const [loading, setLoading] = useState(false);
+  const [stats, setStats] = useState<Stats>({
+    usuarios: 0,
+    perfis: 0,
+    permissoes: 0,
+    restaurantes: 0,
+  });
+  const [loading, setLoading] = useState(true);
 
   const carregarStats = useCallback(async () => {
     setLoading(true);
     try {
-      const [usuarios, perfis, permissoes] = await Promise.all([
-        api.usuarios.listarTodos(),
-        api.perfis.listarTodos(),
-        api.permissoes.listarTodos(),
+      const [usuarios, perfis, permissoes, restaurantes] = await Promise.all([
+        api.usuarios.listarTodos().catch(() => []),
+        api.perfis.listarTodos().catch(() => []),
+        api.permissoes.listarTodos().catch(() => []),
+        api.restaurantes.listarTodos().catch(() => []),
       ]);
       setStats({
         usuarios: usuarios.length,
         perfis: perfis.length,
         permissoes: permissoes.length,
+        restaurantes: restaurantes.length,
       });
     } catch (err) {
       console.error('Erro ao carregar estatísticas:', err);
@@ -64,7 +72,7 @@ export default function DashboardPage() {
     },
     {
       label: 'Restaurantes',
-      value: '-',
+      value: stats.restaurantes,
       icon: Building2,
       href: '/restaurantes',
       color: 'bg-success/10 text-success',
@@ -73,46 +81,55 @@ export default function DashboardPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-lg font-semibold text-text-primary">Visão Geral</h2>
-          <p className="text-sm text-text-secondary">Estatísticas do sistema</p>
+      <div className="bg-surface rounded-2xl shadow-sm border border-border p-6">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+          <div className="flex items-center gap-4">
+            <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-primary to-primary-dark flex items-center justify-center shadow-md">
+              <Shield className="w-7 h-7 text-white" />
+            </div>
+            <div>
+              <h1 className="text-2xl font-bold text-text-primary">Dashboard</h1>
+              <p className="text-text-secondary mt-0.5">Visão geral do sistema</p>
+            </div>
+          </div>
+          <button
+            onClick={carregarStats}
+            disabled={loading}
+            className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-text-secondary hover:text-text-primary hover:bg-background rounded-lg transition-all"
+          >
+            <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+            Atualizar
+          </button>
         </div>
-        <button
-          onClick={carregarStats}
-          disabled={loading}
-          className="inline-flex items-center gap-2 px-3 py-2 text-sm font-medium text-text-secondary hover:text-text-primary transition-colors"
-        >
-          <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
-          Atualizar
-        </button>
-      </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-        {statCards.map((card) => {
-          const Icon = card.icon;
-          return (
-            <Link
-              key={card.label}
-              href={card.href}
-              className="group bg-surface rounded-xl border border-border p-5 hover:border-primary/30 hover:shadow-md transition-all duration-200"
-            >
-              <div className="flex items-start justify-between">
-                <div>
-                  <p className="text-sm text-text-secondary mb-1">{card.label}</p>
-                  <p className="text-3xl font-bold text-text-primary">{card.value}</p>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          {statCards.map((card) => {
+            const Icon = card.icon;
+            return (
+              <Link
+                key={card.label}
+                href={card.href}
+                className="group bg-background rounded-xl p-5 hover:shadow-md transition-all duration-200"
+              >
+                <div className="flex items-start justify-between">
+                  <div>
+                    <p className="text-sm text-text-secondary mb-1">{card.label}</p>
+                    <p className="text-3xl font-bold text-text-primary">
+                      {loading ? '-' : card.value}
+                    </p>
+                  </div>
+                  <div className={`p-3 rounded-xl ${card.color}`}>
+                    <Icon className="w-6 h-6" />
+                  </div>
                 </div>
-                <div className={`p-3 rounded-xl ${card.color}`}>
-                  <Icon className="w-6 h-6" />
+                <div className="mt-4 flex items-center gap-1 text-sm font-medium text-primary opacity-0 group-hover:opacity-100 transition-opacity">
+                  Ver {card.label.toLowerCase()}
+                  <ArrowRight className="w-4 h-4" />
                 </div>
-              </div>
-              <div className="mt-4 flex items-center gap-1 text-sm font-medium text-primary opacity-0 group-hover:opacity-100 transition-opacity">
-                Ver {card.label.toLowerCase()}
-                <ArrowRight className="w-4 h-4" />
-              </div>
-            </Link>
-          );
-        })}
+              </Link>
+            );
+          })}
+        </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
