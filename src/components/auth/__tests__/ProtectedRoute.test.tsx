@@ -81,4 +81,52 @@ describe('ProtectedRoute', () => {
 
     expect(mockPush).toHaveBeenCalledWith('/custom-login');
   });
+
+  it('redirects to /dashboard when authenticated but wrong role', () => {
+    (useAuth as jest.Mock).mockReturnValue({
+      isAuthenticated: true,
+      isLoading: false,
+      user: { id: '1', nome: 'Test', perfil: { id: '2', nome: 'USUARIO' } },
+    });
+
+    render(
+      <ProtectedRoute requiredRole="ADMIN">
+        <div>Protected Content</div>
+      </ProtectedRoute>,
+    );
+
+    expect(mockPush).toHaveBeenCalledWith('/dashboard');
+  });
+
+  it('renders children when authenticated with correct role', () => {
+    (useAuth as jest.Mock).mockReturnValue({
+      isAuthenticated: true,
+      isLoading: false,
+      user: { id: '1', nome: 'Test', perfil: { id: '1', nome: 'ADMIN' } },
+    });
+
+    render(
+      <ProtectedRoute requiredRole="ADMIN">
+        <div>Protected Content</div>
+      </ProtectedRoute>,
+    );
+
+    expect(screen.getByText('Protected Content')).toBeInTheDocument();
+  });
+
+  it('renders children when no requiredRole is specified', () => {
+    (useAuth as jest.Mock).mockReturnValue({
+      isAuthenticated: true,
+      isLoading: false,
+      user: { id: '1', nome: 'Test', perfil: { id: '2', nome: 'USUARIO' } },
+    });
+
+    render(
+      <ProtectedRoute>
+        <div>Protected Content</div>
+      </ProtectedRoute>,
+    );
+
+    expect(screen.getByText('Protected Content')).toBeInTheDocument();
+  });
 });
