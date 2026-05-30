@@ -43,9 +43,7 @@ export function Sidebar() {
                 key={item.href}
                 href={item.href}
                 className={`flex flex-col items-center gap-1 px-2 py-2 rounded-lg transition-colors ${
-                  active
-                    ? 'text-primary'
-                    : 'text-text-secondary hover:text-text-primary'
+                  active ? 'text-primary' : 'text-text-secondary hover:text-text-primary'
                 }`}
               >
                 <Icon className="w-5 h-5" aria-hidden="true" />

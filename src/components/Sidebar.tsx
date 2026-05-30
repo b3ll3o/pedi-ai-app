@@ -5,6 +5,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import { Menu, X, Users, Shield, Key, LogOut } from 'lucide-react';
 import { useAuth } from '@/lib/auth-context';
 import { useSidebar } from './dashboard/SidebarContext';
+import { AdminOnly } from './auth/AdminOnly';
 
 const menuItems = [
   { href: '/dashboard/usuarios', label: 'Usuários', icon: Users },
@@ -32,12 +33,7 @@ export function Sidebar() {
         <Menu className="w-6 h-6" />
       </button>
 
-      {isOpen && (
-        <div
-          className="lg:hidden fixed inset-0 bg-black/50 z-40"
-          onClick={close}
-        />
-      )}
+      {isOpen && <div className="lg:hidden fixed inset-0 bg-black/50 z-40" onClick={close} />}
 
       <aside
         className={`
@@ -59,27 +55,29 @@ export function Sidebar() {
 
         <nav className="flex-1 min-h-0 overflow-y-auto py-4">
           <ul className="space-y-1 px-2">
-            {menuItems.map((item) => {
-              const isActive = pathname.startsWith(item.href);
-              const Icon = item.icon;
-              return (
-                <li key={item.href}>
-                  <Link
-                    href={item.href}
-                    onClick={close}
-                    aria-current={isActive ? 'page' : undefined}
-                    className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
-                      isActive
-                        ? 'bg-primary text-white'
-                        : 'text-gray-300 hover:bg-secondary-light hover:text-white'
-                    }`}
-                  >
-                    <Icon className="w-5 h-5" aria-hidden="true" />
-                    <span className="font-medium">{item.label}</span>
-                  </Link>
-                </li>
-              );
-            })}
+            <AdminOnly>
+              {menuItems.map((item) => {
+                const isActive = pathname.startsWith(item.href);
+                const Icon = item.icon;
+                return (
+                  <li key={item.href}>
+                    <Link
+                      href={item.href}
+                      onClick={close}
+                      aria-current={isActive ? 'page' : undefined}
+                      className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
+                        isActive
+                          ? 'bg-primary text-white'
+                          : 'text-gray-300 hover:bg-secondary-light hover:text-white'
+                      }`}
+                    >
+                      <Icon className="w-5 h-5" aria-hidden="true" />
+                      <span className="font-medium">{item.label}</span>
+                    </Link>
+                  </li>
+                );
+              })}
+            </AdminOnly>
           </ul>
         </nav>
 

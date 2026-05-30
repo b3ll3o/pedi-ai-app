@@ -92,7 +92,7 @@ describe('Sidebar', () => {
     renderSidebar();
 
     const usuariosLinks = screen.getAllByRole('link', { name: /usuários/i });
-    const activeLink = usuariosLinks.find(link => link.getAttribute('aria-current') === 'page');
+    const activeLink = usuariosLinks.find((link) => link.getAttribute('aria-current') === 'page');
     expect(activeLink).toBeInTheDocument();
   });
 });

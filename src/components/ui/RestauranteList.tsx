@@ -12,7 +12,12 @@ interface RestauranteListProps {
   restaurantesExternos?: Restaurante[];
 }
 
-export function RestauranteList({ onEditar, onDeletar, loadingExterno, restaurantesExternos }: RestauranteListProps) {
+export function RestauranteList({
+  onEditar,
+  onDeletar,
+  loadingExterno,
+  restaurantesExternos,
+}: RestauranteListProps) {
   const [restaurantes, setRestaurantes] = useState<Restaurante[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -83,12 +88,24 @@ export function RestauranteList({ onEditar, onDeletar, loadingExterno, restauran
             <table className="w-full">
               <thead className="bg-background/50">
                 <tr>
-                  <th className="px-4 py-3 text-left text-sm font-semibold text-text-primary">Nome</th>
-                  <th className="px-4 py-3 text-left text-sm font-semibold text-text-primary">CNPJ</th>
-                  <th className="px-4 py-3 text-left text-sm font-semibold text-text-primary">Cidade</th>
-                  <th className="px-4 py-3 text-left text-sm font-semibold text-text-primary">Estado</th>
-                  <th className="px-4 py-3 text-left text-sm font-semibold text-text-primary">Horário</th>
-                  <th className="px-4 py-3 text-right text-sm font-semibold text-text-primary">Ações</th>
+                  <th className="px-4 py-3 text-left text-sm font-semibold text-text-primary">
+                    Nome
+                  </th>
+                  <th className="px-4 py-3 text-left text-sm font-semibold text-text-primary">
+                    CNPJ
+                  </th>
+                  <th className="px-4 py-3 text-left text-sm font-semibold text-text-primary">
+                    Cidade
+                  </th>
+                  <th className="px-4 py-3 text-left text-sm font-semibold text-text-primary">
+                    Estado
+                  </th>
+                  <th className="px-4 py-3 text-left text-sm font-semibold text-text-primary">
+                    Horário
+                  </th>
+                  <th className="px-4 py-3 text-right text-sm font-semibold text-text-primary">
+                    Ações
+                  </th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border">
@@ -102,7 +119,9 @@ export function RestauranteList({ onEditar, onDeletar, loadingExterno, restauran
                         <span className="font-medium text-text-primary">{restaurante.nome}</span>
                       </div>
                     </td>
-                    <td className="px-4 py-4 text-sm text-text-secondary font-mono">{restaurante.cnpj}</td>
+                    <td className="px-4 py-4 text-sm text-text-secondary font-mono">
+                      {restaurante.cnpj}
+                    </td>
                     <td className="px-4 py-4 text-sm text-text-secondary">{restaurante.cidade}</td>
                     <td className="px-4 py-4 text-sm text-text-secondary">{restaurante.estado}</td>
                     <td className="px-4 py-4 text-sm text-text-secondary">

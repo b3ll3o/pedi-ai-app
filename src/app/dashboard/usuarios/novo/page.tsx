@@ -45,9 +45,7 @@ export default function NovoUsuarioDashboardPage() {
           Novo Usuário
         </h2>
 
-        <p className="text-text-secondary mb-6 text-sm">
-          Cadastre um novo usuário no sistema.
-        </p>
+        <p className="text-text-secondary mb-6 text-sm">Cadastre um novo usuário no sistema.</p>
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           {error && (
@@ -78,7 +76,7 @@ export default function NovoUsuarioDashboardPage() {
             error={errors.senha?.message}
             {...register('senha', {
               required: 'Senha é obrigatória',
-              minLength: { value: 6, message: 'Mínimo 6 caracteres' }
+              minLength: { value: 6, message: 'Mínimo 6 caracteres' },
             })}
           />
 

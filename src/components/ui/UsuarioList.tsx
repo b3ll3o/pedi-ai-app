@@ -147,10 +147,18 @@ export function UsuarioList() {
             <table className="w-full">
               <thead className="bg-background/50">
                 <tr>
-                  <th className="px-4 py-3 text-left text-sm font-semibold text-text-primary">Nome</th>
-                  <th className="px-4 py-3 text-left text-sm font-semibold text-text-primary">Email</th>
-                  <th className="px-4 py-3 text-left text-sm font-semibold text-text-primary">Criado em</th>
-                  <th className="px-4 py-3 text-right text-sm font-semibold text-text-primary">Ações</th>
+                  <th className="px-4 py-3 text-left text-sm font-semibold text-text-primary">
+                    Nome
+                  </th>
+                  <th className="px-4 py-3 text-left text-sm font-semibold text-text-primary">
+                    Email
+                  </th>
+                  <th className="px-4 py-3 text-left text-sm font-semibold text-text-primary">
+                    Criado em
+                  </th>
+                  <th className="px-4 py-3 text-right text-sm font-semibold text-text-primary">
+                    Ações
+                  </th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border">
@@ -170,10 +178,21 @@ export function UsuarioList() {
                     </td>
                     <td className="px-4 py-4">
                       <div className="flex justify-end gap-2">
-                        <Button variant="ghost" size="sm" onClick={() => window.location.href = `/dashboard/usuarios/${usuario.id}`}>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() =>
+                            (window.location.href = `/dashboard/usuarios/${usuario.id}`)
+                          }
+                        >
                           <Edit2 className="w-4 h-4" />
                         </Button>
-                        <Button variant="ghost" size="sm" onClick={() => handleDelete(usuario.id, usuario.nome)} className="text-error hover:bg-error/10">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleDelete(usuario.id, usuario.nome)}
+                          className="text-error hover:bg-error/10"
+                        >
                           <Trash2 className="w-4 h-4" />
                         </Button>
                       </div>

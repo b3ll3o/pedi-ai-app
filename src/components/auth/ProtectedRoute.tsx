@@ -7,17 +7,29 @@ import { useAuth } from '@/lib/auth-context';
 interface ProtectedRouteProps {
   children: ReactNode;
   redirectTo?: string;
+  requiredRole?: 'ADMIN';
 }
 
-export function ProtectedRoute({ children, redirectTo = '/login' }: ProtectedRouteProps) {
-  const { isAuthenticated, isLoading } = useAuth();
+export function ProtectedRoute({
+  children,
+  redirectTo = '/login',
+  requiredRole,
+}: ProtectedRouteProps) {
+  const { user, isAuthenticated, isLoading } = useAuth();
   const router = useRouter();
 
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
       router.push(redirectTo);
+      return;
     }
-  }, [isAuthenticated, isLoading, redirectTo, router]);
+
+    if (!isLoading && isAuthenticated && requiredRole) {
+      if (user?.perfil?.nome !== requiredRole) {
+        router.push('/dashboard');
+      }
+    }
+  }, [isAuthenticated, isLoading, redirectTo, router, requiredRole, user]);
 
   if (isLoading) {
     return (
@@ -28,6 +40,10 @@ export function ProtectedRoute({ children, redirectTo = '/login' }: ProtectedRou
   }
 
   if (!isAuthenticated) {
+    return null;
+  }
+
+  if (requiredRole && user?.perfil?.nome !== requiredRole) {
     return null;
   }
 

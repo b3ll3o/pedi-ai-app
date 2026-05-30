@@ -154,10 +154,18 @@ export default function PermissoesPage() {
             <table className="w-full">
               <thead className="bg-background/50">
                 <tr>
-                  <th className="px-4 py-3 text-left text-sm font-semibold text-text-primary">Nome</th>
-                  <th className="px-4 py-3 text-left text-sm font-semibold text-text-primary">Chave</th>
-                  <th className="px-4 py-3 text-left text-sm font-semibold text-text-primary">Descrição</th>
-                  <th className="px-4 py-3 text-right text-sm font-semibold text-text-primary">Ações</th>
+                  <th className="px-4 py-3 text-left text-sm font-semibold text-text-primary">
+                    Nome
+                  </th>
+                  <th className="px-4 py-3 text-left text-sm font-semibold text-text-primary">
+                    Chave
+                  </th>
+                  <th className="px-4 py-3 text-left text-sm font-semibold text-text-primary">
+                    Descrição
+                  </th>
+                  <th className="px-4 py-3 text-right text-sm font-semibold text-text-primary">
+                    Ações
+                  </th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border">
@@ -177,14 +185,25 @@ export default function PermissoesPage() {
                       </code>
                     </td>
                     <td className="px-4 py-4 text-sm text-text-secondary">
-                      {permissao.descricao || <span className="text-text-secondary/50">Sem descrição</span>}
+                      {permissao.descricao || (
+                        <span className="text-text-secondary/50">Sem descrição</span>
+                      )}
                     </td>
                     <td className="px-4 py-4">
                       <div className="flex justify-end gap-2">
-                        <Button variant="ghost" size="sm" onClick={() => router.push(`/dashboard/permissoes/${permissao.id}`)}>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => router.push(`/dashboard/permissoes/${permissao.id}`)}
+                        >
                           <Edit2 className="w-4 h-4" />
                         </Button>
-                        <Button variant="ghost" size="sm" onClick={() => handleDelete(permissao.id, permissao.nome)} className="text-error hover:bg-error/10">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleDelete(permissao.id, permissao.nome)}
+                          className="text-error hover:bg-error/10"
+                        >
                           <Trash2 className="w-4 h-4" />
                         </Button>
                       </div>

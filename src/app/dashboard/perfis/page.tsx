@@ -137,10 +137,18 @@ export default function PerfisPage() {
             <table className="w-full">
               <thead className="bg-background/50">
                 <tr>
-                  <th className="px-4 py-3 text-left text-sm font-semibold text-text-primary">Nome</th>
-                  <th className="px-4 py-3 text-left text-sm font-semibold text-text-primary">Descrição</th>
-                  <th className="px-4 py-3 text-center text-sm font-semibold text-text-primary">Permissões</th>
-                  <th className="px-4 py-3 text-right text-sm font-semibold text-text-primary">Ações</th>
+                  <th className="px-4 py-3 text-left text-sm font-semibold text-text-primary">
+                    Nome
+                  </th>
+                  <th className="px-4 py-3 text-left text-sm font-semibold text-text-primary">
+                    Descrição
+                  </th>
+                  <th className="px-4 py-3 text-center text-sm font-semibold text-text-primary">
+                    Permissões
+                  </th>
+                  <th className="px-4 py-3 text-right text-sm font-semibold text-text-primary">
+                    Ações
+                  </th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border">
@@ -155,7 +163,9 @@ export default function PerfisPage() {
                       </div>
                     </td>
                     <td className="px-4 py-4 text-sm text-text-secondary">
-                      {perfil.descricao || <span className="text-text-secondary/50">Sem descrição</span>}
+                      {perfil.descricao || (
+                        <span className="text-text-secondary/50">Sem descrição</span>
+                      )}
                     </td>
                     <td className="px-4 py-4 text-center">
                       <span className="inline-flex items-center justify-center px-2.5 py-1 rounded-full text-xs font-semibold bg-primary/10 text-primary">
@@ -164,10 +174,19 @@ export default function PerfisPage() {
                     </td>
                     <td className="px-4 py-4">
                       <div className="flex justify-end gap-2">
-                        <Button variant="ghost" size="sm" onClick={() => router.push(`/dashboard/perfis/${perfil.id}`)}>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => router.push(`/dashboard/perfis/${perfil.id}`)}
+                        >
                           <Edit2 className="w-4 h-4" />
                         </Button>
-                        <Button variant="ghost" size="sm" onClick={() => handleDelete(perfil.id, perfil.nome)} className="text-error hover:bg-error/10">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleDelete(perfil.id, perfil.nome)}
+                          className="text-error hover:bg-error/10"
+                        >
                           <Trash2 className="w-4 h-4" />
                         </Button>
                       </div>

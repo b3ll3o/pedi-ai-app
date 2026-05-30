@@ -103,11 +103,7 @@ export default function EditarPermissaoPage() {
             A chave é usada internamente. Use CAIXA_ALTA_COM_UNDERSCORE
           </p>
 
-          <Input
-            label="Descrição"
-            {...register('descricao')}
-            placeholder="Descrição opcional"
-          />
+          <Input label="Descrição" {...register('descricao')} placeholder="Descrição opcional" />
 
           <div className="flex gap-3 pt-4">
             <Button type="submit" loading={isSubmitting}>

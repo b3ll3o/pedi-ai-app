@@ -7,9 +7,15 @@ function TestComponent() {
   return (
     <div>
       <span data-testid="isOpen">{isOpen ? 'true' : 'false'}</span>
-      <button onClick={open} data-testid="open">Open</button>
-      <button onClick={close} data-testid="close">Close</button>
-      <button onClick={toggle} data-testid="toggle">Toggle</button>
+      <button onClick={open} data-testid="open">
+        Open
+      </button>
+      <button onClick={close} data-testid="close">
+        Close
+      </button>
+      <button onClick={toggle} data-testid="toggle">
+        Toggle
+      </button>
     </div>
   );
 }
@@ -19,7 +25,7 @@ describe('SidebarContext', () => {
     render(
       <SidebarProvider>
         <TestComponent />
-      </SidebarProvider>
+      </SidebarProvider>,
     );
 
     expect(screen.getByTestId('isOpen')).toHaveTextContent('false');
@@ -29,7 +35,7 @@ describe('SidebarContext', () => {
     render(
       <SidebarProvider>
         <TestComponent />
-      </SidebarProvider>
+      </SidebarProvider>,
     );
 
     act(() => {
@@ -43,7 +49,7 @@ describe('SidebarContext', () => {
     render(
       <SidebarProvider>
         <TestComponent />
-      </SidebarProvider>
+      </SidebarProvider>,
     );
 
     act(() => {
@@ -61,7 +67,7 @@ describe('SidebarContext', () => {
     render(
       <SidebarProvider>
         <TestComponent />
-      </SidebarProvider>
+      </SidebarProvider>,
     );
 
     expect(screen.getByTestId('isOpen')).toHaveTextContent('false');

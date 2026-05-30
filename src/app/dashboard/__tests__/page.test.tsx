@@ -5,10 +5,14 @@ import DashboardPage from '../page';
 jest.mock('@/lib/api', () => ({
   api: {
     usuarios: {
-      listarTodos: jest.fn().mockResolvedValue([{ id: '1', nome: 'User 1', email: 'user1@test.com' }]),
+      listarTodos: jest
+        .fn()
+        .mockResolvedValue([{ id: '1', nome: 'User 1', email: 'user1@test.com' }]),
     },
     perfis: {
-      listarTodos: jest.fn().mockResolvedValue([{ id: '1', nome: 'Admin', descricao: 'Administrador' }]),
+      listarTodos: jest
+        .fn()
+        .mockResolvedValue([{ id: '1', nome: 'Admin', descricao: 'Administrador' }]),
     },
     permissoes: {
       listarTodos: jest.fn().mockResolvedValue([{ id: '1', nome: 'Create', chave: 'CREATE' }]),

@@ -1,6 +1,7 @@
-import { defineConfig, globalIgnores } from "eslint/config";
-import nextVitals from "eslint-config-next/core-web-vitals";
-import nextTs from "eslint-config-next/typescript";
+import { defineConfig, globalIgnores } from 'eslint/config';
+import nextVitals from 'eslint-config-next/core-web-vitals';
+import nextTs from 'eslint-config-next/typescript';
+import prettier from 'eslint-plugin-prettier';
 
 const eslintConfig = defineConfig([
   ...nextVitals,
@@ -8,17 +9,19 @@ const eslintConfig = defineConfig([
   // Override default ignores of eslint-config-next.
   globalIgnores([
     // Default ignores of eslint-config-next:
-    ".next/**",
-    "out/**",
-    "build/**",
-    "next-env.d.ts",
+    '.next/**',
+    'out/**',
+    'build/**',
+    'next-env.d.ts',
     // Generated:
-    "coverage/**",
+    'coverage/**',
   ]),
   // Disable set-state-in-effect rule for auto-load patterns
   {
+    plugins: { prettier },
     rules: {
-      "react-hooks/set-state-in-effect": "off",
+      'react-hooks/set-state-in-effect': 'off',
+      'prettier/prettier': 'error',
     },
   },
 ]);

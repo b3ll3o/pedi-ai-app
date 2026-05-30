@@ -172,7 +172,9 @@ export default function DashboardPage() {
             </div>
             <div className="flex items-center justify-between py-2">
               <span className="text-sm text-text-secondary">Última atualização</span>
-              <span className="text-sm font-medium text-text-primary">{new Date().toLocaleDateString('pt-BR')}</span>
+              <span className="text-sm font-medium text-text-primary">
+                {new Date().toLocaleDateString('pt-BR')}
+              </span>
             </div>
           </div>
         </Card>

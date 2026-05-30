@@ -40,8 +40,6 @@ export function createPageMetadata(options: MetadataOptions = {}): Metadata {
         },
       ],
     },
-    robots: noIndex
-      ? { index: false, follow: false }
-      : { index: true, follow: true },
+    robots: noIndex ? { index: false, follow: false } : { index: true, follow: true },
   };
 }

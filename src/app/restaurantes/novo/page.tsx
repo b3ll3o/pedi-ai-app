@@ -48,10 +48,7 @@ export default function NovoRestaurantePage() {
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-4">
-        <Link
-          href="/restaurantes"
-          className="p-2 hover:bg-surface rounded-lg transition-colors"
-        >
+        <Link href="/restaurantes" className="p-2 hover:bg-surface rounded-lg transition-colors">
           <ArrowLeft className="w-5 h-5 text-text-secondary" />
         </Link>
         <div>
@@ -67,7 +64,11 @@ export default function NovoRestaurantePage() {
       )}
 
       <div className="bg-surface rounded-2xl border border-border p-6">
-        <RestauranteForm onSubmitCriar={handleSubmit} loading={loading} submitLabel="Criar Restaurante" />
+        <RestauranteForm
+          onSubmitCriar={handleSubmit}
+          loading={loading}
+          submitLabel="Criar Restaurante"
+        />
       </div>
     </div>
   );

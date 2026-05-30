@@ -42,12 +42,9 @@ export default function NotFound() {
           </div>
 
           {/* Text */}
-          <h1 className="text-3xl font-bold text-text-primary mb-3">
-            Página não encontrada
-          </h1>
+          <h1 className="text-3xl font-bold text-text-primary mb-3">Página não encontrada</h1>
           <p className="text-text-secondary mb-8 leading-relaxed">
-            Ops! Esta página não existe ou foi movida.
-            Volte ao início e continue navegando.
+            Ops! Esta página não existe ou foi movida. Volte ao início e continue navegando.
           </p>
 
           {/* Actions */}

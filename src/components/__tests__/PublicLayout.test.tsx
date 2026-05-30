@@ -30,7 +30,7 @@ describe('PublicLayout', () => {
     render(
       <PublicLayout>
         <div>Public Content</div>
-      </PublicLayout>
+      </PublicLayout>,
     );
 
     const spinner = document.querySelector('.animate-spin');
@@ -46,7 +46,7 @@ describe('PublicLayout', () => {
     render(
       <PublicLayout>
         <div>Public Content</div>
-      </PublicLayout>
+      </PublicLayout>,
     );
 
     expect(screen.getByText('Public Content')).toBeInTheDocument();
@@ -61,7 +61,7 @@ describe('PublicLayout', () => {
     const { container } = render(
       <PublicLayout>
         <div>Public Content</div>
-      </PublicLayout>
+      </PublicLayout>,
     );
 
     expect(container).toBeEmptyDOMElement();
@@ -76,7 +76,7 @@ describe('PublicLayout', () => {
     render(
       <PublicLayout>
         <div>Public Content</div>
-      </PublicLayout>
+      </PublicLayout>,
     );
 
     expect(mockPush).toHaveBeenCalledWith('/dashboard');

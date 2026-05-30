@@ -46,7 +46,7 @@ describe('DashboardLayout', () => {
     render(
       <DashboardLayout>
         <div>Dashboard Content</div>
-      </DashboardLayout>
+      </DashboardLayout>,
     );
 
     const spinner = document.querySelector('.animate-spin');
@@ -63,7 +63,7 @@ describe('DashboardLayout', () => {
     const { container } = render(
       <DashboardLayout>
         <div>Dashboard Content</div>
-      </DashboardLayout>
+      </DashboardLayout>,
     );
 
     expect(container).toBeEmptyDOMElement();
@@ -79,7 +79,7 @@ describe('DashboardLayout', () => {
     render(
       <DashboardLayout>
         <div>Dashboard Content</div>
-      </DashboardLayout>
+      </DashboardLayout>,
     );
 
     expect(mockPush).toHaveBeenCalledWith('/login');
@@ -95,7 +95,7 @@ describe('DashboardLayout', () => {
     render(
       <DashboardLayout>
         <div>Dashboard Content</div>
-      </DashboardLayout>
+      </DashboardLayout>,
     );
 
     expect(screen.getByText('Dashboard Content')).toBeInTheDocument();
@@ -112,7 +112,7 @@ describe('DashboardLayout', () => {
     render(
       <DashboardLayout>
         <div>Dashboard Content</div>
-      </DashboardLayout>
+      </DashboardLayout>,
     );
 
     expect(screen.queryByText('Dashboard Content')).not.toBeInTheDocument();

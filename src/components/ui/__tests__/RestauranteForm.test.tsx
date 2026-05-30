@@ -46,7 +46,7 @@ describe('RestauranteForm', () => {
             horarioAbertura: '09:00',
             horarioFechamento: '18:00',
           }}
-        />
+        />,
       );
       expect(screen.getByRole('button', { name: /salvar alterações/i })).toBeInTheDocument();
     });
@@ -75,10 +75,12 @@ describe('RestauranteForm', () => {
             horarioAbertura: '09:00',
             horarioFechamento: '18:00',
           }}
-        />
+        />,
       );
 
-      expect(screen.getByRole('textbox', { name: /nome do restaurante/i })).toHaveValue('Restaurante Teste');
+      expect(screen.getByRole('textbox', { name: /nome do restaurante/i })).toHaveValue(
+        'Restaurante Teste',
+      );
       expect(screen.getByRole('textbox', { name: /cnpj/i })).toHaveValue('12.345.678/0001-90');
       expect(screen.getByRole('textbox', { name: /endereço/i })).toHaveValue('Rua Test');
       expect(screen.getByRole('textbox', { name: /cidade/i })).toHaveValue('São Paulo');

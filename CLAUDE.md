@@ -18,6 +18,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 npm run dev           # Next.js dev
 npm run build         # Build produção
 npm run lint          # ESLint
+npm run lint:fix      # ESLint + auto-fix
+npm run format        # Prettier format
 npm test              # Jest
 npm run test:coverage # Com cobertura
 ```
@@ -315,6 +317,79 @@ openspec/
 - Table
 
 **Nunca** usar inputs HTML diretos ou elementos estilizados inline.
+
+---
+
+## RBAC - Controle de Acesso Baseado em Perfis
+
+O frontend implementa **controle de acesso visual** baseado no perfil do usuário.
+
+### Perfis
+
+| Perfil | Acesso |
+|--------|--------|
+| `ADMIN` | Vê e acessa menus de gerenciamento (Usuários, Perfis, Permissões) |
+| `USUARIO` | Não vê menus de gerenciamento, redirecionado se tentar acessar diretamente |
+
+### Componentes de Autorização
+
+**ProtectedRoute com role:**
+```tsx
+// src/components/auth/ProtectedRoute.tsx
+<ProtectedRoute requiredRole="ADMIN">
+  <PaginaAdmin />
+</ProtectedRoute>
+```
+
+**AdminOnly:**
+```tsx
+// src/components/auth/AdminOnly.tsx
+<AdminOnly>
+  <Button>Criar Usuário</Button>
+</AdminOnly>
+```
+
+### Sidebar Condicional
+
+A sidebar usa `AdminOnly` para ocultar menus de gerenciamento quando o usuário não é ADMIN:
+
+```tsx
+<AdminOnly>
+  {menuItems.map(...)}
+</AdminOnly>
+```
+
+### AuthUser Interface
+
+```typescript
+interface AuthUser {
+  id: string;
+  nome: string;
+  email: string;
+  perfilId?: string;
+  perfil?: {
+    id: string;
+    nome: string;  // 'ADMIN' ou 'USUARIO'
+  };
+}
+```
+
+### Fluxo de Verificação
+
+1. Login → `GET /auth/me` retorna dados com `perfil`
+2. `AuthContext` armazena `user.perfil`
+3. `ProtectedRoute` verifica `user.perfil?.nome === requiredRole`
+4. `AdminOnly` verifica `user.perfil?.nome === 'ADMIN'`
+5. Sidebar usa `AdminOnly` para condicional rendering
+
+### Testes E2E
+
+| Cenário | Comportamento |
+|---------|---------------|
+| USUARIO logado | Não vê menu Usuários/Perfis/Permissões |
+| USUARIO tenta acessar /dashboard/usuarios | Redirecionado para /dashboard |
+| ADMIN logado | Vê todos os menus de gerenciamento |
+| ADMIN acessa /dashboard/usuarios | Acesso permitido |
 
 ---
 

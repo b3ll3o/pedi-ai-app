@@ -9,6 +9,10 @@ interface AuthUser {
   nome: string;
   email: string;
   perfilId?: string;
+  perfil?: {
+    id: string;
+    nome: string;
+  };
 }
 
 interface TokenResponse {
@@ -52,7 +56,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
 
     setIsLoading(false);
-     
   }, []);
 
   const login = async (email: string, senha: string) => {

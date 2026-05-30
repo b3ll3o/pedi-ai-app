@@ -30,7 +30,7 @@ describe('ProtectedRoute', () => {
     render(
       <ProtectedRoute>
         <div>Protected Content</div>
-      </ProtectedRoute>
+      </ProtectedRoute>,
     );
 
     const spinner = document.querySelector('.animate-spin');
@@ -46,7 +46,7 @@ describe('ProtectedRoute', () => {
     render(
       <ProtectedRoute>
         <div>Protected Content</div>
-      </ProtectedRoute>
+      </ProtectedRoute>,
     );
 
     expect(screen.queryByText('Protected Content')).not.toBeInTheDocument();
@@ -61,7 +61,7 @@ describe('ProtectedRoute', () => {
     render(
       <ProtectedRoute>
         <div>Protected Content</div>
-      </ProtectedRoute>
+      </ProtectedRoute>,
     );
 
     expect(screen.getByText('Protected Content')).toBeInTheDocument();
@@ -76,7 +76,7 @@ describe('ProtectedRoute', () => {
     render(
       <ProtectedRoute redirectTo="/custom-login">
         <div>Protected Content</div>
-      </ProtectedRoute>
+      </ProtectedRoute>,
     );
 
     expect(mockPush).toHaveBeenCalledWith('/custom-login');

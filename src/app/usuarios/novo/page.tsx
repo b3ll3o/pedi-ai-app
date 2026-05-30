@@ -89,7 +89,7 @@ export default function NovoUsuarioPage() {
               error={errors.senha?.message}
               {...register('senha', {
                 required: 'Senha é obrigatória',
-                minLength: { value: 6, message: 'Mínimo 6 caracteres' }
+                minLength: { value: 6, message: 'Mínimo 6 caracteres' },
               })}
             />
 

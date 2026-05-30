@@ -68,14 +68,24 @@ export default function HomePage() {
           </Link>
 
           <div className={styles.navLinks}>
-            <a href="#features" className={styles.navLink}>Funcionalidades</a>
-            <a href="#how-it-works" className={styles.navLink}>Como Funciona</a>
-            <a href="#pricing" className={styles.navLink}>Preços</a>
+            <a href="#features" className={styles.navLink}>
+              Funcionalidades
+            </a>
+            <a href="#how-it-works" className={styles.navLink}>
+              Como Funciona
+            </a>
+            <a href="#pricing" className={styles.navLink}>
+              Preços
+            </a>
           </div>
 
           <div className={styles.navCtas}>
-            <Link href="/login" className={styles.navLink}>Entrar</Link>
-            <Link href="/usuarios/novo" className={styles.navCta}>Começar Grátis</Link>
+            <Link href="/login" className={styles.navLink}>
+              Entrar
+            </Link>
+            <Link href="/usuarios/novo" className={styles.navCta}>
+              Começar Grátis
+            </Link>
           </div>
         </div>
       </nav>
@@ -169,9 +179,7 @@ export default function HomePage() {
             <Zap aria-hidden="true" size={14} />
             <span>Como Funciona</span>
           </div>
-          <h2 className={styles.sectionTitle}>
-            Comece em 3 passos simples
-          </h2>
+          <h2 className={styles.sectionTitle}>Comece em 3 passos simples</h2>
           <div className={styles.stepsGrid}>
             <div className={styles.stepCard}>
               <div className={styles.stepNumber}>1</div>
@@ -216,9 +224,7 @@ export default function HomePage() {
             <Star aria-hidden="true" size={14} />
             <span>Funcionalidades</span>
           </div>
-          <h2 className={styles.sectionTitle}>
-            Tudo que você precisa para vender mais
-          </h2>
+          <h2 className={styles.sectionTitle}>Tudo que você precisa para vender mais</h2>
           <div className={styles.featuresGrid}>
             <div className={styles.featureCard}>
               <div className={styles.featureIcon}>
@@ -310,9 +316,7 @@ export default function HomePage() {
             <Star aria-hidden="true" size={14} />
             <span>Depoimentos</span>
           </div>
-          <h2 className={styles.sectionTitle}>
-            O que nossos clientes dizem
-          </h2>
+          <h2 className={styles.sectionTitle}>O que nossos clientes dizem</h2>
           <div className={styles.testimonialsGrid}>
             <article className={styles.testimonialCard}>
               <div className={styles.testimonialHeader}>
@@ -396,9 +400,7 @@ export default function HomePage() {
             <CreditCard aria-hidden="true" size={14} />
             <span>Planos</span>
           </div>
-          <h2 className={styles.sectionTitle}>
-            Planos simples e transparentes
-          </h2>
+          <h2 className={styles.sectionTitle}>Planos simples e transparentes</h2>
           <p className={styles.pricingSubtitle}>
             Comece grátis e cresça conforme seu negócio. Sem surpresas.
           </p>
@@ -526,9 +528,7 @@ export default function HomePage() {
             <HelpCircle aria-hidden="true" size={14} />
             <span>Perguntas Frequentes</span>
           </div>
-          <h2 className={styles.sectionTitle}>
-            Perguntas Frequentes
-          </h2>
+          <h2 className={styles.sectionTitle}>Perguntas Frequentes</h2>
           <dl className={styles.faqList}>
             {faqData.map((faq, index) => (
               <div key={index} className={styles.faqItem}>
@@ -547,9 +547,7 @@ export default function HomePage() {
         </div>
         <div className={styles.container}>
           <div className={styles.finalCtaContent}>
-            <h2 className={styles.finalCtaTitle}>
-              Pronto para nunca mais perder um pedido?
-            </h2>
+            <h2 className={styles.finalCtaTitle}>Pronto para nunca mais perder um pedido?</h2>
             <p className={styles.finalCtaText}>
               Comece grátis hoje e veja a diferença em 30 dias. Sem cartão de crédito.
             </p>
@@ -578,14 +576,22 @@ export default function HomePage() {
             <div className={styles.footerBrand}>
               <Link href="/" className={styles.logo}>
                 <div className={styles.logoIconBox}>P</div>
-                <span className={styles.logoText} style={{color: 'white'}}>Pedi-AI</span>
+                <span className={styles.logoText} style={{ color: 'white' }}>
+                  Pedi-AI
+                </span>
               </Link>
               <p className={styles.footerTagline}>Cardápio digital para restaurantes modernos</p>
             </div>
             <nav aria-label="Links do footer" className={styles.footerLinks}>
-              <a href="#features" className={styles.footerLink}>Funcionalidades</a>
-              <a href="#pricing" className={styles.footerLink}>Preços</a>
-              <a href="#faq" className={styles.footerLink}>FAQ</a>
+              <a href="#features" className={styles.footerLink}>
+                Funcionalidades
+              </a>
+              <a href="#pricing" className={styles.footerLink}>
+                Preços
+              </a>
+              <a href="#faq" className={styles.footerLink}>
+                FAQ
+              </a>
             </nav>
           </div>
           <div className={styles.footerBottom}>

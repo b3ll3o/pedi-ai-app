@@ -85,7 +85,7 @@ export default function EditarPerfilPage() {
 
   const permissoesAssociadas = perfil?.permissoes || [];
   const permissoesNaoAssociadas = todasPermissoes.filter(
-    (p) => !permissoesAssociadas.some((pa) => pa.id === p.id)
+    (p) => !permissoesAssociadas.some((pa) => pa.id === p.id),
   );
 
   if (loading) {
@@ -126,11 +126,7 @@ export default function EditarPerfilPage() {
             error={errors.nome?.message}
           />
 
-          <Input
-            label="Descrição"
-            {...register('descricao')}
-            placeholder="Descrição opcional"
-          />
+          <Input label="Descrição" {...register('descricao')} placeholder="Descrição opcional" />
 
           <div className="flex gap-3 pt-4">
             <Button type="submit" loading={isSubmitting}>
@@ -223,7 +219,11 @@ export default function EditarPerfilPage() {
             )}
 
             <div className="mt-4 pt-4 border-t border-border">
-              <Button variant="ghost" className="w-full" onClick={() => setShowAssociarModal(false)}>
+              <Button
+                variant="ghost"
+                className="w-full"
+                onClick={() => setShowAssociarModal(false)}
+              >
                 Fechar
               </Button>
             </div>

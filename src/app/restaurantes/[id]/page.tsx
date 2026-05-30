@@ -27,7 +27,8 @@ export default function EditarRestaurantePage() {
 
     if (isAuthenticated) {
       setLoading(true);
-      api.restaurantes.listarUm(id)
+      api.restaurantes
+        .listarUm(id)
         .then(setRestaurante)
         .catch((err) => {
           setError(err instanceof Error ? err.message : 'Erro ao carregar restaurante');

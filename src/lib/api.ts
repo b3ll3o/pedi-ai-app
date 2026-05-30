@@ -154,7 +154,11 @@ function getAuthHeaders(): HeadersInit {
   return token ? { Authorization: `Bearer ${token}` } : {};
 }
 
-async function fetchJson<T>(url: string, options?: RequestInit, retryWithRefresh = true): Promise<T> {
+async function fetchJson<T>(
+  url: string,
+  options?: RequestInit,
+  retryWithRefresh = true,
+): Promise<T> {
   const headers: HeadersInit = {
     'Content-Type': 'application/json',
     ...getAuthHeaders(),
@@ -201,30 +205,27 @@ async function fetchJson<T>(url: string, options?: RequestInit, retryWithRefresh
 export const api = {
   auth: {
     login: (email: string, senha: string) =>
-      fetchJson<{ accessToken: string; refreshToken: string; expiresIn: number; tokenType: string }>(
-        `${API_URL}/auth/login`,
-        {
-          method: 'POST',
-          body: JSON.stringify({ email, senha }),
-        }
-      ),
+      fetchJson<{
+        accessToken: string;
+        refreshToken: string;
+        expiresIn: number;
+        tokenType: string;
+      }>(`${API_URL}/auth/login`, {
+        method: 'POST',
+        body: JSON.stringify({ email, senha }),
+      }),
 
-    me: () =>
-      fetchJson<Usuario>(`${API_URL}/auth/me`),
+    me: () => fetchJson<Usuario>(`${API_URL}/auth/me`),
 
-    logout: () =>
-      fetchJson<void>(`${API_URL}/auth/logout`, { method: 'POST' }),
+    logout: () => fetchJson<void>(`${API_URL}/auth/logout`, { method: 'POST' }),
   },
 
   usuarios: {
-    listarTodos: () =>
-      fetchJson<Usuario[]>(`${API_URL}/users`),
+    listarTodos: () => fetchJson<Usuario[]>(`${API_URL}/users`),
 
-    listarUm: (id: string) =>
-      fetchJson<Usuario>(`${API_URL}/users/${id}`),
+    listarUm: (id: string) => fetchJson<Usuario>(`${API_URL}/users/${id}`),
 
-    listarPorEmail: (email: string) =>
-      fetchJson<Usuario>(`${API_URL}/users/email/${email}`),
+    listarPorEmail: (email: string) => fetchJson<Usuario>(`${API_URL}/users/email/${email}`),
 
     criar: (data: CriarUsuarioDto) =>
       fetchJson<Usuario>(`${API_URL}/users`, {
@@ -245,11 +246,9 @@ export const api = {
   },
 
   permissoes: {
-    listarTodos: () =>
-      fetchJson<Permissao[]>(`${API_URL}/permissoes`),
+    listarTodos: () => fetchJson<Permissao[]>(`${API_URL}/permissoes`),
 
-    listarUm: (id: string) =>
-      fetchJson<Permissao>(`${API_URL}/permissoes/${id}`),
+    listarUm: (id: string) => fetchJson<Permissao>(`${API_URL}/permissoes/${id}`),
 
     criar: (data: CriarPermissaoDto) =>
       fetchJson<Permissao>(`${API_URL}/permissoes`, {
@@ -270,11 +269,9 @@ export const api = {
   },
 
   perfis: {
-    listarTodos: () =>
-      fetchJson<Perfil[]>(`${API_URL}/perfis`),
+    listarTodos: () => fetchJson<Perfil[]>(`${API_URL}/perfis`),
 
-    listarUm: (id: string) =>
-      fetchJson<Perfil>(`${API_URL}/perfis/${id}`),
+    listarUm: (id: string) => fetchJson<Perfil>(`${API_URL}/perfis/${id}`),
 
     criar: (data: CriarPerfilDto) =>
       fetchJson<Perfil>(`${API_URL}/perfis`, {
@@ -306,11 +303,9 @@ export const api = {
   },
 
   restaurantes: {
-    listarTodos: () =>
-      fetchJson<Restaurante[]>(`${API_URL}/restaurants`),
+    listarTodos: () => fetchJson<Restaurante[]>(`${API_URL}/restaurants`),
 
-    listarUm: (id: string) =>
-      fetchJson<Restaurante>(`${API_URL}/restaurants/${id}`),
+    listarUm: (id: string) => fetchJson<Restaurante>(`${API_URL}/restaurants/${id}`),
 
     criar: (data: CriarRestauranteDto) =>
       fetchJson<Restaurante>(`${API_URL}/restaurants`, {

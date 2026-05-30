@@ -21,9 +21,7 @@ export function Table({ headers, children, className = '' }: TableProps) {
               ))}
             </tr>
           </thead>
-          <tbody className="divide-y divide-border">
-            {children}
-          </tbody>
+          <tbody className="divide-y divide-border">{children}</tbody>
         </table>
       </div>
     </div>

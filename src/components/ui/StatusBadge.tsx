@@ -13,10 +13,16 @@ const statusConfig: Record<string, { bg: string; text: string; label: string }> 
 };
 
 export function StatusBadge({ status, className = '' }: StatusBadgeProps) {
-  const config = statusConfig[status] || { bg: 'bg-background', text: 'text-text-secondary', label: status };
+  const config = statusConfig[status] || {
+    bg: 'bg-background',
+    text: 'text-text-secondary',
+    label: status,
+  };
 
   return (
-    <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium border ${config.bg} ${config.text} ${className}`}>
+    <span
+      className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium border ${config.bg} ${config.text} ${className}`}
+    >
       {config.label}
     </span>
   );

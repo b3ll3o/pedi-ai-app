@@ -31,14 +31,24 @@ describe('UI Components Index', () => {
   it('exports Table', () => {
     render(
       <Table headers={['Col1']}>
-        <tr><td>Data</td></tr>
-      </Table>
+        <tr>
+          <td>Data</td>
+        </tr>
+      </Table>,
     );
     expect(screen.getByRole('table')).toBeInTheDocument();
   });
 
   it('exports TableRow', () => {
-    render(<table><tbody><TableRow><td>Row Data</td></TableRow></tbody></table>);
+    render(
+      <table>
+        <tbody>
+          <TableRow>
+            <td>Row Data</td>
+          </TableRow>
+        </tbody>
+      </table>,
+    );
     expect(screen.getByRole('row')).toBeInTheDocument();
   });
 });

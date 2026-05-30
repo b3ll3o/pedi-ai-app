@@ -27,7 +27,8 @@ function formatCNPJ(value: string): string {
   if (digits.length <= 2) return digits;
   if (digits.length <= 5) return `${digits.slice(0, 2)}.${digits.slice(2)}`;
   if (digits.length <= 8) return `${digits.slice(0, 2)}.${digits.slice(2, 5)}.${digits.slice(5)}`;
-  if (digits.length <= 12) return `${digits.slice(0, 2)}.${digits.slice(2, 5)}.${digits.slice(5, 8)}/${digits.slice(8)}`;
+  if (digits.length <= 12)
+    return `${digits.slice(0, 2)}.${digits.slice(2, 5)}.${digits.slice(5, 8)}/${digits.slice(8)}`;
   return `${digits.slice(0, 2)}.${digits.slice(2, 5)}.${digits.slice(5, 8)}/${digits.slice(8, 12)}-${digits.slice(12, 14)}`;
 }
 
@@ -54,7 +55,13 @@ function validateCNPJ(cnpj: string): boolean {
   return d1 === parseInt(digits[12]) && d2 === parseInt(digits[13]);
 }
 
-export function RestauranteForm({ initialData, onSubmitCriar, onSubmitAtualizar, loading, submitLabel }: RestauranteFormProps) {
+export function RestauranteForm({
+  initialData,
+  onSubmitCriar,
+  onSubmitAtualizar,
+  loading,
+  submitLabel,
+}: RestauranteFormProps) {
   const [nome, setNome] = useState(initialData?.nome || '');
   const [cnpj, setCnpj] = useState(initialData?.cnpj || '');
   const [endereco, setEndereco] = useState(initialData?.endereco || '');
@@ -82,7 +89,8 @@ export function RestauranteForm({ initialData, onSubmitCriar, onSubmitAtualizar,
     if (!cep.trim()) newErrors.cep = 'CEP é obrigatório';
     else if (cep.replace(/\D/g, '').length !== 8) newErrors.cep = 'CEP inválido';
     if (!horarioAbertura.trim()) newErrors.horarioAbertura = 'Horário de abertura é obrigatório';
-    if (!horarioFechamento.trim()) newErrors.horarioFechamento = 'Horário de fechamento é obrigatório';
+    if (!horarioFechamento.trim())
+      newErrors.horarioFechamento = 'Horário de fechamento é obrigatório';
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;

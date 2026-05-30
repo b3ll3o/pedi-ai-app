@@ -25,8 +25,20 @@ describe('AuthProvider', () => {
         <span data-testid="is-authenticated">{isAuthenticated.toString()}</span>
         <span data-testid="user">{user?.email || 'null'}</span>
         <span data-testid="token">{accessToken || 'null'}</span>
-        <button onClick={() => { login('test@test.com', 'password').catch(() => {}); }}>Login</button>
-        <button onClick={() => { logout(); }}>Logout</button>
+        <button
+          onClick={() => {
+            login('test@test.com', 'password').catch(() => {});
+          }}
+        >
+          Login
+        </button>
+        <button
+          onClick={() => {
+            logout();
+          }}
+        >
+          Logout
+        </button>
       </div>
     );
   };
@@ -35,7 +47,7 @@ describe('AuthProvider', () => {
     render(
       <AuthProvider>
         <DummyChild />
-      </AuthProvider>
+      </AuthProvider>,
     );
     expect(screen.getByTestId('is-loading')).toHaveTextContent('false');
   });
@@ -44,7 +56,7 @@ describe('AuthProvider', () => {
     render(
       <AuthProvider>
         <DummyChild />
-      </AuthProvider>
+      </AuthProvider>,
     );
 
     await waitFor(() => {
@@ -62,7 +74,7 @@ describe('AuthProvider', () => {
     render(
       <AuthProvider>
         <DummyChild />
-      </AuthProvider>
+      </AuthProvider>,
     );
 
     await waitFor(() => {
@@ -77,7 +89,12 @@ describe('AuthProvider', () => {
     mockFetch
       .mockResolvedValueOnce({
         ok: true,
-        json: async () => ({ accessToken: 'new-token', refreshToken: 'refresh-token', expiresIn: 900, tokenType: 'Bearer' }),
+        json: async () => ({
+          accessToken: 'new-token',
+          refreshToken: 'refresh-token',
+          expiresIn: 900,
+          tokenType: 'Bearer',
+        }),
       })
       .mockResolvedValueOnce({
         ok: true,
@@ -87,7 +104,7 @@ describe('AuthProvider', () => {
     render(
       <AuthProvider>
         <DummyChild />
-      </AuthProvider>
+      </AuthProvider>,
     );
 
     await waitFor(() => {
@@ -115,7 +132,7 @@ describe('AuthProvider', () => {
     render(
       <AuthProvider>
         <DummyChild />
-      </AuthProvider>
+      </AuthProvider>,
     );
 
     await waitFor(() => {
@@ -142,7 +159,7 @@ describe('AuthProvider', () => {
     render(
       <AuthProvider>
         <DummyChild />
-      </AuthProvider>
+      </AuthProvider>,
     );
 
     await waitFor(() => {
@@ -171,7 +188,7 @@ describe('AuthProvider', () => {
     render(
       <AuthProvider>
         <DummyChild />
-      </AuthProvider>
+      </AuthProvider>,
     );
 
     await waitFor(() => {

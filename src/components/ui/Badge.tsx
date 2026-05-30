@@ -14,7 +14,9 @@ export function Badge({ variant = 'neutral', children, className = '' }: BadgePr
   };
 
   return (
-    <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${variants[variant]} ${className}`}>
+    <span
+      className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${variants[variant]} ${className}`}
+    >
       {children}
     </span>
   );
