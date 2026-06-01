@@ -64,6 +64,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const res = await fetch(`${API_URL}/auth/login`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
       body: JSON.stringify({ email, senha }),
     });
 
@@ -74,10 +75,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     const tokens: TokenResponse = await res.json();
 
+    // Set cookie for middleware (httpOnly: false so client-side can also access)
+    document.cookie = `${ACCESS_TOKEN_KEY}=${tokens.accessToken}; path=/; max-age=${tokens.expiresIn}; samesite=lax`;
+    document.cookie = `${REFRESH_TOKEN_KEY}=${tokens.refreshToken}; path=/; max-age=${tokens.expiresIn * 2}; samesite=lax`;
+
     localStorage.setItem(ACCESS_TOKEN_KEY, tokens.accessToken);
     localStorage.setItem(REFRESH_TOKEN_KEY, tokens.refreshToken);
 
     const meRes = await fetch(`${API_URL}/auth/me`, {
+      credentials: 'include',
       headers: { Authorization: `Bearer ${tokens.accessToken}` },
     });
 
@@ -98,6 +104,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (token) {
         await fetch(`${API_URL}/auth/logout`, {
           method: 'POST',
+          credentials: 'include',
           headers: { Authorization: `Bearer ${token}` },
         });
       }
@@ -109,6 +116,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       localStorage.removeItem(USER_KEY);
       setAccessToken(null);
       setUser(null);
+      // Clear cookies by setting expired cookies
+      document.cookie = `${ACCESS_TOKEN_KEY}=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT`;
+      document.cookie = `${REFRESH_TOKEN_KEY}=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT`;
     }
   };
 
