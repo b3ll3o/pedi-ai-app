@@ -2,9 +2,9 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { Button, Input } from '@/components/ui';
+import { Button, Input, Modal, ConfirmDialog } from '@/components/ui';
 import { api, Perfil } from '@/lib/api';
-import { Shield, Plus, RefreshCw, X, Trash2, Edit2 } from 'lucide-react';
+import { Shield, Plus, RefreshCw, Trash2, Edit2 } from 'lucide-react';
 
 export default function PerfisPage() {
   const router = useRouter();
@@ -15,6 +15,8 @@ export default function PerfisPage() {
   const [novoNome, setNovoNome] = useState('');
   const [novaDescricao, setNovaDescricao] = useState('');
   const [creating, setCreating] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState<{ id: string; nome: string } | null>(null);
+  const [deleting, setDeleting] = useState(false);
 
   const carregarPerfis = async () => {
     setLoading(true);
@@ -45,19 +47,27 @@ export default function PerfisPage() {
       setShowModal(false);
       await carregarPerfis();
     } catch (err) {
-      alert(err instanceof Error ? err.message : 'Erro ao criar');
+      setError(err instanceof Error ? err.message : 'Erro ao criar');
     } finally {
       setCreating(false);
     }
   };
 
   const handleDelete = async (id: string, nome: string) => {
-    if (!confirm(`Deseja excluir o perfil "${nome}"?`)) return;
+    setConfirmDelete({ id, nome });
+  };
+
+  const confirmarDelete = async () => {
+    if (!confirmDelete) return;
+    setDeleting(true);
     try {
-      await api.perfis.deletar(id);
-      setPerfis((prev) => prev.filter((p) => p.id !== id));
+      await api.perfis.deletar(confirmDelete.id);
+      setPerfis((prev) => prev.filter((p) => p.id !== confirmDelete.id));
+      setConfirmDelete(null);
     } catch (err) {
-      alert(err instanceof Error ? err.message : 'Erro ao excluir');
+      setError(err instanceof Error ? err.message : 'Erro ao excluir');
+    } finally {
+      setDeleting(false);
     }
   };
 
@@ -113,47 +123,41 @@ export default function PerfisPage() {
         </div>
       )}
 
-      {showModal && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-surface rounded-2xl p-6 w-full max-w-md shadow-2xl border border-border">
-            <div className="flex justify-between items-center mb-6">
-              <h3 className="text-lg font-bold text-text-primary flex items-center gap-2">
-                <Shield className="w-5 h-5 text-primary" />
-                Novo Perfil
-              </h3>
-              <button
-                onClick={() => setShowModal(false)}
-                className="p-2 hover:bg-background rounded-lg transition-colors"
-              >
-                <X className="w-5 h-5 text-text-secondary" />
-              </button>
-            </div>
-            <form onSubmit={handleCreate} className="space-y-4">
-              <Input
-                label="Nome do Perfil"
-                value={novoNome}
-                onChange={(e) => setNovoNome(e.target.value)}
-                placeholder="Ex: Administrador"
-                required
-              />
-              <Input
-                label="Descrição"
-                value={novaDescricao}
-                onChange={(e) => setNovaDescricao(e.target.value)}
-                placeholder="Descrição opcional do perfil"
-              />
-              <div className="flex gap-3 pt-2">
-                <Button type="submit" loading={creating} className="flex-1">
-                  Criar Perfil
-                </Button>
-                <Button type="button" variant="ghost" onClick={() => setShowModal(false)}>
-                  Cancelar
-                </Button>
-              </div>
-            </form>
+      <Modal open={showModal} onClose={() => setShowModal(false)} title="Novo Perfil">
+        <form onSubmit={handleCreate} className="space-y-4">
+          <Input
+            label="Nome do Perfil"
+            value={novoNome}
+            onChange={(e) => setNovoNome(e.target.value)}
+            placeholder="Ex: Administrador"
+            required
+          />
+          <Input
+            label="Descrição"
+            value={novaDescricao}
+            onChange={(e) => setNovaDescricao(e.target.value)}
+            placeholder="Descrição opcional do perfil"
+          />
+          <div className="flex gap-3 pt-2">
+            <Button type="submit" loading={creating} className="flex-1">
+              Criar Perfil
+            </Button>
+            <Button type="button" variant="ghost" onClick={() => setShowModal(false)}>
+              Cancelar
+            </Button>
           </div>
-        </div>
-      )}
+        </form>
+      </Modal>
+
+      <ConfirmDialog
+        open={confirmDelete !== null}
+        onClose={() => setConfirmDelete(null)}
+        onConfirm={confirmarDelete}
+        loading={deleting}
+        title="Excluir perfil"
+        description={`Tem certeza que deseja excluir o perfil "${confirmDelete?.nome ?? ''}"? Esta ação não pode ser desfeita.`}
+        confirmLabel="Excluir"
+      />
 
       <div className="bg-surface rounded-2xl shadow-sm border border-border overflow-hidden">
         <div className="overflow-x-auto">
@@ -219,16 +223,18 @@ export default function PerfisPage() {
                           variant="ghost"
                           size="sm"
                           onClick={() => router.push(`/dashboard/perfis/${perfil.id}`)}
+                          aria-label={`Editar perfil ${perfil.nome}`}
                         >
-                          <Edit2 className="w-4 h-4" />
+                          <Edit2 className="w-4 h-4" aria-hidden="true" />
                         </Button>
                         <Button
                           variant="ghost"
                           size="sm"
                           onClick={() => handleDelete(perfil.id, perfil.nome)}
                           className="text-error hover:bg-error/10"
+                          aria-label={`Excluir perfil ${perfil.nome}`}
                         >
-                          <Trash2 className="w-4 h-4" />
+                          <Trash2 className="w-4 h-4" aria-hidden="true" />
                         </Button>
                       </div>
                     </td>

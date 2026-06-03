@@ -2,9 +2,9 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { Button, Input } from '@/components/ui';
+import { Button, Input, Modal } from '@/components/ui';
 import { api, Permissao } from '@/lib/api';
-import { Key, Plus, RefreshCw, X, Trash2, Edit2 } from 'lucide-react';
+import { Key, Plus, RefreshCw, Trash2, Edit2 } from 'lucide-react';
 
 export default function PermissoesPage() {
   const router = useRouter();
@@ -64,8 +64,14 @@ export default function PermissoesPage() {
   };
 
   const handleChaveChange = (value: string) => {
-    const formatted = value.toUpperCase().replace(/[^A-Z0-9_]/g, '_');
-    setNovaChave(formatted);
+    // Formato esperado pela API: `recurso:acao` (letras minúsculas, dígitos).
+    // Qualquer caractere inválido vira `_` no segmento recurso; mantemos o
+    // `:` separador para que a chave respeite o regex do DTO no backend.
+    const lower = value.toLowerCase();
+    const [recurso = '', acao = ''] = lower.split(':');
+    const sanitizedRecurso = recurso.replace(/[^a-z0-9]/g, '');
+    const sanitizedAcao = acao.replace(/[^a-z0-9_]/g, '');
+    setNovaChave(`${sanitizedRecurso}:${sanitizedAcao}`);
   };
 
   return (
@@ -109,57 +115,41 @@ export default function PermissoesPage() {
         </div>
       )}
 
-      {showModal && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-surface rounded-2xl p-6 w-full max-w-md shadow-2xl border border-border">
-            <div className="flex justify-between items-center mb-6">
-              <h3 className="text-lg font-bold text-text-primary flex items-center gap-2">
-                <Key className="w-5 h-5 text-warning" />
-                Nova Permissão
-              </h3>
-              <button
-                onClick={() => setShowModal(false)}
-                className="p-2 hover:bg-background rounded-lg transition-colors"
-              >
-                <X className="w-5 h-5 text-text-secondary" />
-              </button>
-            </div>
-            <form onSubmit={handleCreate} className="space-y-4">
-              <Input
-                label="Nome da Permissão"
-                value={novoNome}
-                onChange={(e) => setNovoNome(e.target.value)}
-                placeholder="Ex: Visualizar Pedidos"
-                required
-              />
-              <Input
-                label="Chave"
-                value={novaChave}
-                onChange={(e) => handleChaveChange(e.target.value)}
-                placeholder="VISUALIZAR_PEDIDOS"
-                required
-              />
-              <p className="text-xs text-text-secondary -mt-2">
-                A chave é usada internamente. Use CAIXA_ALTA_COM_UNDERSCORE
-              </p>
-              <Input
-                label="Descrição"
-                value={novaDescricao}
-                onChange={(e) => setNovaDescricao(e.target.value)}
-                placeholder="Descrição opcional"
-              />
-              <div className="flex gap-3 pt-2">
-                <Button type="submit" loading={creating} className="flex-1">
-                  Criar Permissão
-                </Button>
-                <Button type="button" variant="ghost" onClick={() => setShowModal(false)}>
-                  Cancelar
-                </Button>
-              </div>
-            </form>
+      <Modal open={showModal} onClose={() => setShowModal(false)} title="Nova Permissão">
+        <form onSubmit={handleCreate} className="space-y-4">
+          <Input
+            label="Nome da Permissão"
+            value={novoNome}
+            onChange={(e) => setNovoNome(e.target.value)}
+            placeholder="Ex: Visualizar Pedidos"
+            required
+          />
+          <Input
+            label="Chave"
+            value={novaChave}
+            onChange={(e) => handleChaveChange(e.target.value)}
+            placeholder="recurso:acao"
+            required
+          />
+          <p className="text-xs text-text-secondary -mt-2">
+            A chave é usada internamente. Use o formato recurso:acao (minúsculas)
+          </p>
+          <Input
+            label="Descrição"
+            value={novaDescricao}
+            onChange={(e) => setNovaDescricao(e.target.value)}
+            placeholder="Descrição opcional"
+          />
+          <div className="flex gap-3 pt-2">
+            <Button type="submit" loading={creating} className="flex-1">
+              Criar Permissão
+            </Button>
+            <Button type="button" variant="ghost" onClick={() => setShowModal(false)}>
+              Cancelar
+            </Button>
           </div>
-        </div>
-      )}
+        </form>
+      </Modal>
 
       <div className="bg-surface rounded-2xl shadow-sm border border-border overflow-hidden">
         <div className="overflow-x-auto">
@@ -225,16 +215,18 @@ export default function PermissoesPage() {
                           variant="ghost"
                           size="sm"
                           onClick={() => router.push(`/dashboard/permissoes/${permissao.id}`)}
+                          aria-label={`Editar permissão ${permissao.nome}`}
                         >
-                          <Edit2 className="w-4 h-4" />
+                          <Edit2 className="w-4 h-4" aria-hidden="true" />
                         </Button>
                         <Button
                           variant="ghost"
                           size="sm"
                           onClick={() => handleDelete(permissao.id, permissao.nome)}
                           className="text-error hover:bg-error/10"
+                          aria-label={`Excluir permissão ${permissao.nome}`}
                         >
-                          <Trash2 className="w-4 h-4" />
+                          <Trash2 className="w-4 h-4" aria-hidden="true" />
                         </Button>
                       </div>
                     </td>

@@ -71,6 +71,12 @@ describe('AuthProvider', () => {
     localStorage.setItem('pedi_auth_access_token', 'fake-token');
     localStorage.setItem('pedi_auth_user', JSON.stringify(storedUser));
 
+    // O useEffect chama /auth/me para validar o token guardado
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: async () => storedUser,
+    });
+
     render(
       <AuthProvider>
         <DummyChild />

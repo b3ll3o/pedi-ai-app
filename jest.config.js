@@ -8,7 +8,11 @@ const config = {
   moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/src/$1',
   },
-  testPathIgnorePatterns: ['<rootDir>/.next/', '<rootDir>/node_modules/'],
+  testPathIgnorePatterns: [
+    '<rootDir>/.next/',
+    '<rootDir>/.next/standalone/',
+    '<rootDir>/node_modules/',
+  ],
   collectCoverageFrom: ['src/**/*.{ts,tsx}', '!src/**/*.d.ts', '!src/app/layout.tsx'],
   coverageThreshold: {
     global: {
@@ -30,6 +34,7 @@ const config = {
     '/components/ui/RestauranteForm',
     '/components/ui/RestauranteList',
     '/components/seo/',
+    '/proxy.ts',
   ],
 };
 

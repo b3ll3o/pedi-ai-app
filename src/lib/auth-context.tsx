@@ -37,31 +37,78 @@ const ACCESS_TOKEN_KEY = 'pedi_auth_access_token';
 const REFRESH_TOKEN_KEY = 'pedi_auth_refresh_token';
 const USER_KEY = 'pedi_auth_user';
 
+function clearAuthStorage() {
+  localStorage.removeItem(ACCESS_TOKEN_KEY);
+  localStorage.removeItem(REFRESH_TOKEN_KEY);
+  localStorage.removeItem(USER_KEY);
+}
+
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<AuthUser | null>(null);
   const [accessToken, setAccessToken] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const abortController = new AbortController();
-
     const storedToken = localStorage.getItem(ACCESS_TOKEN_KEY);
     const storedUser = localStorage.getItem(USER_KEY);
 
-    if (storedToken && storedUser) {
-      setAccessToken(storedToken);
-      setUser(JSON.parse(storedUser));
+    if (!storedToken || !storedUser) {
+      setIsLoading(false);
+      return;
     }
 
-    setIsLoading(false);
+    // Hidrata estado imediatamente do storage para evitar flicker de loading.
+    // Em paralelo, valida o token via /auth/me e usa a resposta FRESCA (não o
+    // JSON armazenado) para refletir mudanças recentes (perfil, nome, etc).
+    try {
+      setAccessToken(storedToken);
+      setUser(JSON.parse(storedUser));
+    } catch {
+      // JSON corrompido no storage — limpa e considera deslogado
+      clearAuthStorage();
+      setAccessToken(null);
+      setUser(null);
+      setIsLoading(false);
+      return;
+    }
 
-    return () => {
-      abortController.abort();
-    };
+    const controller = new AbortController();
+    fetch(`${API_URL}/auth/me`, {
+      credentials: 'include',
+      headers: { Authorization: `Bearer ${storedToken}` },
+      signal: controller.signal,
+    })
+      .then(async (res) => {
+        if (!res.ok) {
+          // Token inválido/expirado — descarta storage
+          clearAuthStorage();
+          setAccessToken(null);
+          setUser(null);
+        } else {
+          // Usa dados frescos do backend, não os do localStorage
+          const freshUser = (await res.json()) as AuthUser;
+          setUser(freshUser);
+          localStorage.setItem(USER_KEY, JSON.stringify(freshUser));
+        }
+      })
+      .catch((err) => {
+        if (err?.name !== 'AbortError') {
+          // Erro de rede (não abort) — loga mas mantém storage
+          console.warn('[auth] Falha ao validar /auth/me no boot:', err);
+        }
+      })
+      .finally(() => {
+        setIsLoading(false);
+      });
+
+    return () => controller.abort();
   }, []);
 
   const login = async (email: string, senha: string) => {
-    const res = await fetch(`${API_URL}/auth/login`, {
+    // POST para a rota server-side do Next — ela chama o backend e seta os
+    // cookies httpOnly. O cliente recebe o access token (TTL curto) e usa
+    // para o header Authorization; o refresh fica preso no cookie.
+    const res = await fetch('/api/auth/login', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       credentials: 'include',
@@ -75,10 +122,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     const tokens: TokenResponse = await res.json();
 
-    // Set cookie for middleware (httpOnly: false so client-side can also access)
-    document.cookie = `${ACCESS_TOKEN_KEY}=${tokens.accessToken}; path=/; max-age=${tokens.expiresIn}; samesite=lax`;
-    document.cookie = `${REFRESH_TOKEN_KEY}=${tokens.refreshToken}; path=/; max-age=${tokens.expiresIn * 2}; samesite=lax`;
-
     localStorage.setItem(ACCESS_TOKEN_KEY, tokens.accessToken);
     localStorage.setItem(REFRESH_TOKEN_KEY, tokens.refreshToken);
 
@@ -88,6 +131,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     });
 
     if (!meRes.ok) {
+      // Limpar storage e cookies para evitar estado parcial
+      clearAuthStorage();
       throw new Error('Falha ao obter dados do usuário');
     }
 
@@ -101,24 +146,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const logout = async () => {
     try {
       const token = localStorage.getItem(ACCESS_TOKEN_KEY);
-      if (token) {
-        await fetch(`${API_URL}/auth/logout`, {
-          method: 'POST',
-          credentials: 'include',
-          headers: { Authorization: `Bearer ${token}` },
-        });
-      }
+      // Server route invalida o refresh no backend e limpa cookies httpOnly.
+      await fetch('/api/auth/logout', {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ accessToken: token }),
+      });
     } catch {
       // ignore logout errors
     } finally {
-      localStorage.removeItem(ACCESS_TOKEN_KEY);
-      localStorage.removeItem(REFRESH_TOKEN_KEY);
-      localStorage.removeItem(USER_KEY);
+      clearAuthStorage();
       setAccessToken(null);
       setUser(null);
-      // Clear cookies by setting expired cookies
-      document.cookie = `${ACCESS_TOKEN_KEY}=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT`;
-      document.cookie = `${REFRESH_TOKEN_KEY}=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT`;
     }
   };
 

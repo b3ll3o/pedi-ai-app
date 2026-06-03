@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui';
+import { AdminOnly } from '@/components/auth/AdminOnly';
 import { api, Restaurante } from '@/lib/api';
 import { Building2, MapPin, RefreshCw, Edit2, Trash2 } from 'lucide-react';
 
@@ -49,9 +50,11 @@ export default function RestaurantesPage() {
               <p className="text-text-secondary mt-0.5">Gerencie seus restaurantes e operações</p>
             </div>
           </div>
-          <Button onClick={() => (window.location.href = '/restaurantes/novo')}>
-            Novo Restaurante
-          </Button>
+          <AdminOnly>
+            <Button onClick={() => (window.location.href = '/restaurantes/novo')}>
+              Novo Restaurante
+            </Button>
+          </AdminOnly>
         </div>
 
         <div className="grid grid-cols-2 gap-4 mt-6 pt-6 border-t border-border">

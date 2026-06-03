@@ -13,6 +13,10 @@ const pageTitles: Record<string, { title: string; breadcrumb: string }> = {
   '/dashboard/permissoes': { title: 'Permissões', breadcrumb: 'Gestão / Permissões' },
 };
 
+// Páginas de gestão que exigem perfil ADMIN. USUARIO comum é redirecionado
+// para /dashboard se tentar acessá-las diretamente pela URL.
+const ADMIN_ONLY_PATHS = ['/dashboard/usuarios', '/dashboard/perfis', '/dashboard/permissoes'];
+
 function getPageInfo(pathname: string) {
   if (pathname.startsWith('/dashboard/usuarios')) {
     return pageTitles['/dashboard/usuarios'];
@@ -38,8 +42,20 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
       router.push('/login');
+      return;
     }
-  }, [isLoading, isAuthenticated, router]);
+    // Bloqueio client-side para rotas admin-only: USUARIO é redirecionado
+    // para /dashboard antes que a página renderize (defense-in-depth junto
+    // com o AdminOnly da Sidebar, que só esconde o menu).
+    if (
+      !isLoading &&
+      isAuthenticated &&
+      user?.perfil?.nome !== 'ADMIN' &&
+      ADMIN_ONLY_PATHS.some((p) => pathname === p || pathname.startsWith(`${p}/`))
+    ) {
+      router.push('/dashboard');
+    }
+  }, [isLoading, isAuthenticated, router, pathname, user]);
 
   if (isLoading) {
     return (
@@ -50,6 +66,14 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
   }
 
   if (!user) {
+    return null;
+  }
+
+  // USUARIO em rota admin-only: não renderiza conteúdo enquanto redireciona.
+  const isAdminOnlyPath = ADMIN_ONLY_PATHS.some(
+    (p) => pathname === p || pathname.startsWith(`${p}/`),
+  );
+  if (isAdminOnlyPath && user.perfil?.nome !== 'ADMIN') {
     return null;
   }
 

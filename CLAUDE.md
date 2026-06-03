@@ -2,402 +2,162 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in `pedi-ai-app`.
 
-## Stack
+## ⚠️ Next.js 16 — Read Before Coding
 
-- **Runtime:** Node.js 20+
-- **Framework:** Next.js 16 + React 19
-- **Styling:** Tailwind CSS v4
-- **Icons:** Lucide React
-- **HTTP Client:** Client-side fetch
+This is **Next.js 16**, which has **breaking changes** from the version in training data. APIs, conventions, and file structure may differ. Before writing any Next.js code, use WebFetch em `https://nextjs.org/docs` (oficial) ou `WebSearch` para confirmar a API atual — `node_modules/next/dist/docs/` contém apenas docs internas (community, contribution, pages router), não o guia de uso. Heed deprecation notices. (Also in `AGENTS.md`.)
 
 ---
 
 ## Comandos
 
 ```bash
-npm run dev           # Next.js dev
-npm run build         # Build produção
-npm run lint          # ESLint
-npm run lint:fix      # ESLint + auto-fix
-npm run format        # Prettier format
-npm test              # Jest
-npm run test:coverage # Com cobertura
+npm run dev              # Dev server (localhost:3000)
+npm run build            # Build produção (output: .next/standalone)
+npm run lint             # ESLint
+npm run lint:fix         # ESLint + auto-fix
+npm run format           # Prettier
+npm test                 # Jest (todos)
+npm test -- <path>       # Jest (um arquivo): npm test -- src/components/ui/Button.test.tsx
+npm test -- -t "<name>"  # Jest (um teste pelo nome)
+npm run test:coverage    # Cobertura (mínimo 80% — ver jest.config.js)
 ```
+
+API esperada em `http://localhost:3001` (`NEXT_PUBLIC_API_URL`). Subir com `cd ../pedi-ai-api && npm run start:dev` ou `docker-compose up -d`.
 
 ---
 
-## Arquitetura Atual
-
-Estrutura do projeto usando Next.js App Router:
+## Estrutura Atual
 
 ```
 src/
-├── app/                    # App Router (rotas e layouts)
-│   ├── dashboard/         # Dashboard (protegido)
-│   ├── login/             # Página de login
-│   ├── perfis/            # Gerenciamento de perfis
-│   ├── permissoes/        # Gerenciamento de permissões
-│   ├── usuarios/          # Gerenciamento de usuários
-│   ├── layout.tsx         # Layout raiz
-│   └── page.tsx           # Página inicial
-├── components/             # Componentes compartilhados
-│   ├── auth/              # ProtectedRoute, etc
-│   ├── dashboard/         # Sidebar, DashboardLayout, etc
-│   ├── ui/                # Button, Input, Card, Badge, etc
-│   ├── MainLayout.tsx
-│   └── Sidebar.tsx
-└── lib/                    # Utilitários (api client, utils)
+├── app/                          # App Router
+│   ├── login/                    # Pública
+│   ├── dashboard/                # Protegida (gate via proxy.ts)
+│   │   ├── page.tsx              # /dashboard
+│   │   ├── usuarios/{[id],novo}  # /dashboard/usuarios{,/[id],/novo}
+│   │   ├── perfis/[id]/          # /dashboard/perfis{,/[id]}
+│   │   └── permissoes/[id]/      # /dashboard/permissoes{,/[id]}
+│   ├── restaurantes/             # ⚠️ fora de /dashboard (exceção histórica)
+│   │   ├── page.tsx              # /restaurantes
+│   │   ├── [id]/                 # /restaurantes/[id]
+│   │   ├── novo/                 # /restaurantes/novo
+│   │   └── layout.tsx + RestaurantesLayoutClient.tsx
+│   ├── layout.tsx                # Layout raiz (envolve AuthProvider via providers.tsx)
+│   ├── providers.tsx             # Client provider wrapper
+│   └── globals.css               # Design tokens (Tailwind v4 @theme)
+├── components/
+│   ├── ui/                       # Button, Input, Card, Badge, StatusBadge, Table (reutilizáveis)
+│   │                            # + UsuarioList, RestauranteForm, RestauranteList
+│   ├── auth/                     # ProtectedRoute, AdminOnly
+│   ├── dashboard/                # DashboardLayout, Sidebar, SidebarContext
+│   ├── MainLayout.tsx            # Layout com sidebar
+│   ├── PublicLayout.tsx          # Layout público
+│   └── seo/                      # SEO components
+├── lib/
+│   ├── api.ts                    # Cliente fetch com auto-refresh 401
+│   └── auth-context.tsx          # AuthProvider + useAuth (dual storage: localStorage + cookie)
+└── proxy.ts                      # Gate server-side (Next.js 16 substituiu middleware.ts por proxy.ts): redireciona /dashboard/* e /restaurantes/* sem cookie
+openspec/                         # specs/, changes/, archive/ — ver CLAUDE.md do monorepo
 ```
+
+**Exceção de roteamento (histórica):** `restaurantes` está em `/restaurantes`, **não** em `/dashboard/restaurantes`. Hoje o `proxy.ts` **já protege** essa rota (matcher inclui `/restaurantes/:path*`), mas vale manter em mente ao reorganizar.
+
+> Para novos domínios, migrar para `src/features/<dominio>/{domain,application,infrastructure,presentation}/` (ver CLAUDE.md do monorepo).
 
 ---
 
-## Estrutura DDD-alvo (para novos domínios)
+## Padrões Arquiteturais Críticos
 
-Para novos domínios, seguir estrutura DDD orientada a features:
+### 1. Autenticação — Dual Storage (localStorage + cookie)
 
-```
-src/features/
-└── <dominio>/
-    ├── domain/               # Modelo de domínio do frontend
-    │   ├── types/            # Types e interfaces do domínio
-    │   └── hooks/            # Hooks de domínio
-    ├── application/          # Lógica de aplicação
-    │   └── hooks/            # Hooks de aplicação
-    ├── infrastructure/       # Implementações externas
-    │   └── api/              # Chamadas à API
-    └── presentation/         # UI do domínio
-        └── components/       # Componentes específicos
-```
+`src/lib/auth-context.tsx` armazena tokens em **dois lugares**:
+- `localStorage` (`pedi_auth_access_token`, `pedi_auth_refresh_token`, `pedi_auth_user`) — usado pelo cliente
+- `document.cookie` (`pedi_auth_access_token`) — lido pelo **`src/proxy.ts`** server-side
 
-### Domínios Identificados
+Por isso o cookie é escrito com `httpOnly: false`. O proxy (`/dashboard/:path*` e `/restaurantes/:path*`) redireciona para `/login` quando o cookie está ausente — isso acontece **antes** do React montar.
 
-| Domínio | Descrição | Localização |
-|---------|-----------|-------------|
-| `autenticacao` | Autenticação e autorização | `src/app/login/`, `src/components/auth/` |
-| `usuario` | Usuários do sistema | `src/app/usuarios/` |
-| `perfil` | Perfis de usuário | `src/app/perfis/` |
-| `permissao` | Permissões de acesso | `src/app/permissoes/` |
+`ProtectedRoute` (`src/components/auth/ProtectedRoute.tsx`) é a **segunda camada**: client-side, verifica `isAuthenticated` do contexto e redireciona via `router.push`. `requiredRole="ADMIN"` valida `user.perfil?.nome === requiredRole`.
 
----
+`AdminOnly` (`src/components/auth/AdminOnly.tsx`) é **puramente visual** — não redireciona, só renderiza `null` se não for ADMIN. Usado na `Sidebar` para ocultar menus.
 
-## OpenSpec-SDD + DDD Workflow
+### 2. Cliente API — Auto-Refresh em 401
 
-Este projeto utiliza **OpenSpec / Specification-Driven Development** com **Domain-Driven Design** para novos domínios.
+`src/lib/api.ts` expõe `api.{auth,usuarios,permissoes,perfis,restaurantes}`. Internamente:
+- `fetchJson()` adiciona `Authorization: Bearer <accessToken>` automaticamente
+- Em 401, chama `refreshAccessToken()` e **refaz a request original** com o novo token
+- Múltiplas chamadas 401 simultâneas são deduplicadas via `refreshInProgress` / `refreshPromise`
+- Em falha de refresh, limpa localStorage e propaga o erro
 
-### Classificação por Impacto
+Nunca chamar `fetch` direto para a API — usar `api.*`. O auto-refresh é parte do contrato.
 
-| Tipo       | Escopo                                | Artefatos necessários                                |
-|------------|---------------------------------------|------------------------------------------------------|
-| `minor`    | Bug fix, refactor interno             | spec.md atualizada                                   |
-| `standard` | Nova feature, mudança moderada        | proposal + spec + tasks                              |
-| `major`    | Mudança arquitetural, multi-domínio   | proposal + design + tasks + review formal            |
+### 3. Roteamento Protegido
 
-### Estados de Spec
+| Camada | Onde | O que faz |
+|--------|------|-----------|
+| Proxy (ex-middleware) | `src/proxy.ts` | Server-side: redireciona `/dashboard/*` e `/restaurantes/*` sem cookie |
+| `ProtectedRoute` | `src/components/auth/` | Client-side: redirect via `router.push` se `!isAuthenticated` |
+| `AdminOnly` | `src/components/auth/` | Visual: renderiza `null` se não-ADMIN |
 
-| Estado     | Descrição                                                              |
-|------------|-----------------------------------------------------------------------|
-| `draft`    | Em elaboração                                                          |
-| `review`   | Em revisão (stakeholders, team)                                        |
-| `approved` | Aprovada, pronta para implementação                                     |
-| `implemented` | Código shipped e testado                                         |
-| `archived` | Movida para archive/ (não mais ativa)                                  |
+Defense in depth: proxy bloqueia antes do HTML, ProtectedRoute cobre transições client-side, AdminOnly esconde UI.
 
-### Fluxo Completo
+### 4. Next.js Rewrites
 
-```
-1. Criar spec (draft) em openspec/specs/<dominio>/
-2. Classificar (minor/standard/major)
-3. Identificar domínio (bounded context)
-4. Revisar (review → approved)
-5. Implementar (DDD: feature/domain, feature/infrastructure, feature/presentation)
-6. Validar (testes, coverage 80%+)
-7. Vincular (PR/commit → spec)
-8. Arquivar (move to archive/YYYY-MM/)
-```
+`next.config.ts` define rewrite `/api/:path*` → `http://localhost:3001/:path*`. Cuidado: a API client (`lib/api.ts`) usa `NEXT_PUBLIC_API_URL` direto, não passa por `/api/`.
 
-### Regras Obrigatórias
+### 5. UI Components
 
-1. **Spec first** — ANTES de escrever código, a especificação DEVE existir em `openspec/specs/`
-2. **DDD** — Novos domínios DEVEM seguir Domain-Driven Design organizado por features
-3. **Classificação** — Toda spec DEVE ter tipo (minor/standard/major) e estado definido
-4. **Proposta** — Mudanças `standard` e `major` DEVEM ter proposta em `openspec/changes/<feature>/proposal.md`
-5. **Design** — Mudanças `major` DEVEM ter design documentado em `openspec/changes/<feature>/design.md`
-6. **Tasks** — Implementação QUEBRADA em tarefas em `openspec/changes/<feature>/tasks.md`
-7. **Idioma** — TODO código e documentação em **Português Brasileiro (pt-BR)**
-8. **Testes** — Cobertura mínima 80%
-9. **Aceitação** — Implementação SÓ pode começar APÓS spec ter estado `approved`
-10. **Arquivamento** — Changes concluídas DEVEM ser movidas para `openspec/archive/<YYYY-MM>/` com `_summary.md`
+**Sempre usar** `src/components/ui/` (Button, Input, Card, Badge, StatusBadge, Table). Nunca inputs/buttons HTML diretos — ver `STYLE_GUIDE.md` para detalhes de estilização (variáveis CSS, spacing, estados).
 
-### Checklist de Quality Gate
+### 6. Cores e Design Tokens
 
-Para uma spec ser considerada válida (estado `approved`), DEVE conter:
-
-- [ ] **Objetivo**: O que resolve, para quem
-- [ ] **Domínio**: Bounded context identificado
-- [ ] **Contexto**: Situação atual, problema
-- [ ] **Modelo de Domínio**: Entidades, types, hooks definidos
-- [ ] **Requisitos**: RF e RNF numerados (RF-01, RF-02...)
-- [ ] **Critérios de aceitação**: Mensuráveis e testáveis
-- [ ] **Decisões de design**: Links para design.md se aplicável
-- [ ] **Estratégia de testes**: Como validar que está pronto
-- [ ] **Tasks vinculadas**: tasks.md criada e linkada
-- [ ] **Revisão aprovada**: Pelo menos 1 reviewer sign-off
-
-### Template de Spec
-
-```markdown
----
-status: draft|review|approved|implemented|archived
-type: minor|standard|major
-domain: <bounded-context>
-created: YYYY-MM-DD
-updated: YYYY-MM-DD
-linked_prs: [PR #...]
----
-
-# <Nome da Spec>
-
-## Domínio
-<Bounded Context>
-
-## Objetivo
-O que resolve, para quem.
-
-## Contexto
-Situação atual, problema.
-
-## Modelo de Domínio (Frontend)
-
-### Entidades (Types)
-- **Entidade1**: descrição, atributos principais
-- **Entidade2**: descrição, atributos principais
-
-### Hooks de Domínio
-- **useEntidade1**: comportamento e estado da entidade
-- **useEntidade2**: comportamento e estado da entidade
-
-### Serviços de Domínio
-- **servico1**: responsabilidade, regras de validação
-
-## Requisitos Funcionais (RF)
-- RF-01: ...
-- RF-02: ...
-
-## Requisitos Não-Funcionais (RNF)
-- RNF-01: ...
-
-## Critérios de Aceitação
-- [ ] Critério 1
-- [ ] Critério 2
-
-## Estrutura de Arquivos
-
-```
-features/<dominio>/
-├── domain/
-│   ├── types/              # Entidades (types/interfaces)
-│   └── hooks/              # Hooks de domínio
-├── application/
-│   └── hooks/              # Hooks de aplicação
-├── infrastructure/
-│   └── api/                # Chamadas à API
-└── presentation/
-    └── components/         # Componentes UI do domínio
-```
-
-## Decisões de Design
-- [Design](design.md) - se aplicável
-
-## Estratégia de Testes
-- Unitários: ...
-- E2E: ...
-
-## Tasks
-- [Tasks](tasks.md)
-```
-
-### Traceability
-
-Commits e PRs DEVEM referenciar a spec que implementam:
-
-```
-commit: <hash>
-spec: openspec/specs/<dominio>/spec.md
-domain: <bounded-context>
-```
-
-No PR description:
-```
-## Spec
-- Implementa: openspec/specs/<dominio>/spec.md
-- Domínio: <bounded-context>
-```
-
-### Automação CI
-
-```
-- PR não pode ser mergeado se código muda domínio X
-  sem que a spec correspondente tenha status "approved"
-- Commits DEVEM referenciar spec (commit msg ou PR description)
-- Coverage mínimo 80% enforced no CI
-- TypeScript check passes
-```
-
-### Estrutura OpenSpec
-
-```
-openspec/
-├── config.yaml          # Configuração do projeto
-├── specs/               # Especificações de domínio
-│   └── <dominio>/
-│       └── spec.md
-└── changes/             # Propostas de mudança
-    └── <feature>/
-        ├── proposal.md
-        ├── design.md
-        ├── tasks.md
-        └── specs/
-└── archive/             # Changes concluídas (arquivadas por mês)
-    └── <YYYY-MM>/
-        └── _summary.md  # Liga specs e decisions principais
-```
+Definidos em `src/app/globals.css` via Tailwind v4 `@theme`:
+- `--color-primary: #0D9488` (teal) / `--color-secondary: #1E3A5F` (navy)
+- Tokens derivados: `-dark`, `-light`; semânticos: `success`, `warning`, `error`, `background`, `surface`, `text-primary`, `text-secondary`, `border`
+- Usar como classes Tailwind: `bg-primary`, `text-text-secondary`, `border-border`. **Evitar** `gray-100`, `gray-700` hardcoded.
 
 ---
 
-## Design Tokens (CSS)
+## OpenSpec + DDD
 
-```css
-:root {
-  --color-primary: #0D9488;     /* teal */
-  --color-secondary: #1E3A5F;   /* navy */
-  --color-success: #059669;
-  --color-warning: #D97706;
-  --color-error: #DC2626;
-}
-```
+Metodologia, classificação, estados de spec, template, e regras de traceability estão no **`/home/leo/pedi-ai/CLAUDE.md`** (monorepo). Resumo local:
 
----
+- Specs: `openspec/specs/<domain>/spec.md`
+- Changes: `openspec/changes/<feature>/{proposal,design,tasks}.md`
+- Idioma: **pt-BR** em código e docs
+- Coverage: **80%** enforced em `jest.config.js` (`coverageThreshold.global`)
+- Implementação só após spec `approved`
 
-## Padrões de Código
-
-### Componentes
--命名: PascalCase
-- Localizados em `presentation/components/` ou `src/components/`
-- Devem usar componentes de `components/ui/`
-
-### Hooks
--命名: camelCase, prefix `use`
-- Domain hooks: `use<Entidade>` (ex: useUsuario)
-- Application hooks: `use<CasoDeUso>` (ex: useCriarPedido)
-
-### Types/Entities
--命名: PascalCase
-- Definidos em `domain/types/` para novos módulos
-- Exportados via barrel exports
+**Specs existentes neste app** (`openspec/specs/`):
+- `app/` — estrutura raiz e providers
+- `auth/` — autenticação
+- `dashboard/` — rotas autenticadas
+- `infra/` — build, deploy, configuração
+- `seo/` — sitemap, robots, metadata
 
 ---
 
 ## Testes
 
-- **Cobertura mínima:** 80%
-- Testes DEVEM ser escritos ANTES ou DURANTE a implementação
-- Code review DEVE verificar conformidade com spec e DDD
-- Testar fluxos de usuário completos, não só componentes isolados
+- Framework: Jest 30 + Testing Library + jsdom (`jest.config.js`)
+- Localização: `__tests__/` ao lado do código testado (ex: `src/components/ui/__tests__/Button.test.tsx`)
+- Coverage mínimo 80% — branches, functions, lines, statements (todas enforced)
+- Pastas ignoradas em coverage: `/app/`, `/lib/`, `MainLayout`, `Sidebar`, `components/ui/index`, etc. — ver `jest.config.js`
+- E2E (Playwright) está em `../pedi-ai-e2e/` — **não** roda dentro deste projeto
+
+Padrão de teste de componente: render + query por `screen.getByRole` / `getByText`, simular usuário com `@testing-library/user-event`. Ver `src/components/ui/__tests__/Button.test.tsx` para referência.
 
 ---
 
-## UI Components
+## Deploy
 
-**Sempre usar** componentes em `components/ui/`:
-- Button
-- Input
-- Card
-- Badge
-- StatusBadge
-- Table
-
-**Nunca** usar inputs HTML diretos ou elementos estilizados inline.
+Build produz `.next/standalone/server.js` (output `standalone` em `next.config.ts`). Service file em `deploy/pedi-ai-app.service` — `WorkingDirectory=/root/pedi-ai-app`, `ExecStart=/usr/bin/node .next/standalone/server.js`. VPS em `187.77.204.108` com SSL via Let's Encrypt.
 
 ---
 
-## RBAC - Controle de Acesso Baseado em Perfis
+## Gotchas
 
-O frontend implementa **controle de acesso visual** baseado no perfil do usuário.
-
-### Perfis
-
-| Perfil | Acesso |
-|--------|--------|
-| `ADMIN` | Vê e acessa menus de gerenciamento (Usuários, Perfis, Permissões) |
-| `USUARIO` | Não vê menus de gerenciamento, redirecionado se tentar acessar diretamente |
-
-### Componentes de Autorização
-
-**ProtectedRoute com role:**
-```tsx
-// src/components/auth/ProtectedRoute.tsx
-<ProtectedRoute requiredRole="ADMIN">
-  <PaginaAdmin />
-</ProtectedRoute>
-```
-
-**AdminOnly:**
-```tsx
-// src/components/auth/AdminOnly.tsx
-<AdminOnly>
-  <Button>Criar Usuário</Button>
-</AdminOnly>
-```
-
-### Sidebar Condicional
-
-A sidebar usa `AdminOnly` para ocultar menus de gerenciamento quando o usuário não é ADMIN:
-
-```tsx
-<AdminOnly>
-  {menuItems.map(...)}
-</AdminOnly>
-```
-
-### AuthUser Interface
-
-```typescript
-interface AuthUser {
-  id: string;
-  nome: string;
-  email: string;
-  perfilId?: string;
-  perfil?: {
-    id: string;
-    nome: string;  // 'ADMIN' ou 'USUARIO'
-  };
-}
-```
-
-### Fluxo de Verificação
-
-1. Login → `GET /auth/me` retorna dados com `perfil`
-2. `AuthContext` armazena `user.perfil`
-3. `ProtectedRoute` verifica `user.perfil?.nome === requiredRole`
-4. `AdminOnly` verifica `user.perfil?.nome === 'ADMIN'`
-5. Sidebar usa `AdminOnly` para condicional rendering
-
-### Testes E2E
-
-| Cenário | Comportamento |
-|---------|---------------|
-| USUARIO logado | Não vê menu Usuários/Perfis/Permissões |
-| USUARIO tenta acessar /dashboard/usuarios | Redirecionado para /dashboard |
-| ADMIN logado | Vê todos os menus de gerenciamento |
-| ADMIN acessa /dashboard/usuarios | Acesso permitido |
-
----
-
-## Responsabilidades por Camada (DDD)
-
-| Camada | Responsabilidade | Não fazer |
-|--------|-----------------|-----------|
-| `domain` | Tipos, hooks de domínio, lógica de domínio pura | Acesso a API, side effects |
-| `application` | Orchestrates use cases, hook de aplicação | Regras de negócio diretas |
-| `infrastructure` | Chamadas à API, cache, storage | Lógica de negócio |
-| `presentation` | UI components, pages | Lógica de negócio |
+- **Next.js 16**: confirmar API atual via WebFetch em `https://nextjs.org/docs` ou WebSearch antes de criar rotas, layouts ou server actions. Padrões do Next 14/15 não se aplicam integralmente. `node_modules/next/dist/docs/` tem só docs internas (não é guia de uso).
+- **Token refresh**: nunca duplicar a lógica de refresh — usar `api.*` que já trata 401.
+- **Proxy vs ProtectedRoute**: o proxy usa cookie; o `AuthProvider` precisa ter rodado para o ProtectedRoute checar contexto. Em SSR/hidratação, sempre contar com o proxy como primeira barreira.
+- **Cobertura**: testes novos precisam manter 80% — se quebrar, `npm run test:coverage` falha o build.
+- **Path aliases**: `@/*` resolve para `src/*` (configurado em `jest.config.js` e `tsconfig.json`).

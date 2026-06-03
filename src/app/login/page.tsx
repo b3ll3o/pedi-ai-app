@@ -1,15 +1,38 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { Suspense, useEffect, useState } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '@/lib/auth-context';
 import { Button, Input } from '@/components/ui';
 import { LogIn, Eye, EyeOff } from 'lucide-react';
 import Link from 'next/link';
 
+/**
+ * Valida que o `redirect` é um path interno do app. Sem essa validação, um
+ * atacante pode induzir o usuário a logar e em seguida ser enviado para um
+ * domínio externo (ex: ?redirect=https://evil.com). Aceita apenas strings
+ * que começam com `/` único, sem protocolo e sem `//` (path-relative absoluto).
+ */
+function safeRedirectPath(raw: string | null): string {
+  if (!raw) return '/dashboard';
+  if (!raw.startsWith('/')) return '/dashboard';
+  if (raw.startsWith('//')) return '/dashboard';
+  if (raw.startsWith('/\\')) return '/dashboard';
+  return raw;
+}
+
 export default function LoginPage() {
+  return (
+    <Suspense fallback={null}>
+      <LoginForm />
+    </Suspense>
+  );
+}
+
+function LoginForm() {
   const { isAuthenticated, isLoading, login } = useAuth();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [email, setEmail] = useState('');
   const [senha, setSenha] = useState('');
   const [error, setError] = useState<string | null>(null);
@@ -18,9 +41,10 @@ export default function LoginPage() {
 
   useEffect(() => {
     if (!isLoading && isAuthenticated) {
-      router.push('/dashboard');
+      const target = safeRedirectPath(searchParams.get('redirect'));
+      router.push(target);
     }
-  }, [isAuthenticated, isLoading, router]);
+  }, [isAuthenticated, isLoading, router, searchParams]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

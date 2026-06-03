@@ -2,8 +2,8 @@
 
 import { useState, useEffect } from 'react';
 import { api, Usuario } from '@/lib/api';
-import { Button, Input } from '@/components/ui';
-import { User, Plus, RefreshCw, Trash2, Edit2, X, Users } from 'lucide-react';
+import { Button, Input, Modal } from '@/components/ui';
+import { User, Plus, RefreshCw, Trash2, Edit2, Users } from 'lucide-react';
 
 interface UsuarioListProps {
   onUsuarioCriado?: () => void;
@@ -82,62 +82,46 @@ export function UsuarioList({ onUsuarioCriado }: UsuarioListProps) {
         </div>
       )}
 
-      {showModal && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-surface rounded-2xl p-6 w-full max-w-md shadow-2xl border border-border">
-            <div className="flex justify-between items-center mb-6">
-              <h3 className="text-lg font-bold text-text-primary flex items-center gap-2">
-                <User className="w-5 h-5 text-primary" />
-                Novo Usuário
-              </h3>
-              <button
-                onClick={() => setShowModal(false)}
-                className="p-2 hover:bg-background rounded-lg transition-colors"
-              >
-                <X className="w-5 h-5 text-text-secondary" />
-              </button>
-            </div>
-            <form onSubmit={handleCreate} className="space-y-4">
-              <Input
-                label="Nome"
-                value={novoNome}
-                onChange={(e) => setNovoNome(e.target.value)}
-                placeholder="Nome completo"
-                required
-              />
-              <Input
-                label="Email"
-                type="email"
-                value={novoEmail}
-                onChange={(e) => setNovoEmail(e.target.value)}
-                placeholder="email@exemplo.com"
-                required
-              />
-              <Input
-                label="Senha"
-                type="password"
-                value={novaSenha}
-                onChange={(e) => setNovaSenha(e.target.value)}
-                placeholder="Senhatemporary"
-                required
-              />
-              <div className="flex gap-3 pt-2">
-                <Button type="submit" loading={creating} className="flex-1">
-                  Criar Usuário
-                </Button>
-                <Button type="button" variant="ghost" onClick={() => setShowModal(false)}>
-                  Cancelar
-                </Button>
-              </div>
-            </form>
+      <Modal open={showModal} onClose={() => setShowModal(false)} title="Novo Usuário">
+        <form onSubmit={handleCreate} className="space-y-4">
+          <Input
+            label="Nome"
+            value={novoNome}
+            onChange={(e) => setNovoNome(e.target.value)}
+            placeholder="Nome completo"
+            required
+          />
+          <Input
+            label="Email"
+            type="email"
+            value={novoEmail}
+            onChange={(e) => setNovoEmail(e.target.value)}
+            placeholder="email@exemplo.com"
+            required
+          />
+          <Input
+            label="Senha"
+            type="password"
+            value={novaSenha}
+            onChange={(e) => setNovaSenha(e.target.value)}
+            placeholder="Senhatemporary"
+            required
+          />
+          <div className="flex gap-3 pt-2">
+            <Button type="submit" loading={creating} className="flex-1">
+              Criar Usuário
+            </Button>
+            <Button type="button" variant="ghost" onClick={() => setShowModal(false)}>
+              Cancelar
+            </Button>
           </div>
-        </div>
-      )}
+        </form>
+      </Modal>
 
       <div className="bg-surface rounded-2xl shadow-sm border border-border overflow-hidden">
         <div className="overflow-x-auto">
           {usuarios.length === 0 && !loading ? (
-            <div className="py-20 text-center min-w-full">
+            <div data-testid="empty-state" className="py-20 text-center min-w-full">
               <div className="w-20 h-20 rounded-full bg-primary/5 flex items-center justify-center mx-auto mb-5">
                 <Users className="w-10 h-10 text-primary/40" />
               </div>
@@ -194,16 +178,18 @@ export function UsuarioList({ onUsuarioCriado }: UsuarioListProps) {
                           onClick={() =>
                             (window.location.href = `/dashboard/usuarios/${usuario.id}`)
                           }
+                          aria-label={`Editar usuário ${usuario.nome}`}
                         >
-                          <Edit2 className="w-4 h-4" />
+                          <Edit2 className="w-4 h-4" aria-hidden="true" />
                         </Button>
                         <Button
                           variant="ghost"
                           size="sm"
                           onClick={() => handleDelete(usuario.id, usuario.nome)}
                           className="text-error hover:bg-error/10"
+                          aria-label={`Excluir usuário ${usuario.nome}`}
                         >
-                          <Trash2 className="w-4 h-4" />
+                          <Trash2 className="w-4 h-4" aria-hidden="true" />
                         </Button>
                       </div>
                     </td>

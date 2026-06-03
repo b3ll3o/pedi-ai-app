@@ -21,6 +21,10 @@ export default function DashboardPage() {
     restaurantes: 0,
   });
   const [loading, setLoading] = useState(true);
+  // Evita hydration mismatch: o servidor não tem como saber a data local
+  // do cliente e `toLocaleDateString` pode divergir (timezone, locale).
+  // Renderiza placeholder no SSR e troca para a data real após o mount.
+  const [hoje, setHoje] = useState<string>('');
 
   const carregarStats = useCallback(async () => {
     setLoading(true);
@@ -46,6 +50,7 @@ export default function DashboardPage() {
 
   useEffect(() => {
     carregarStats();
+    setHoje(new Date().toLocaleDateString('pt-BR'));
   }, [carregarStats]);
 
   const statCards = [
@@ -189,9 +194,7 @@ export default function DashboardPage() {
             </div>
             <div className="flex items-center justify-between py-2">
               <span className="text-sm text-text-secondary">Última atualização</span>
-              <span className="text-sm font-medium text-text-primary">
-                {new Date().toLocaleDateString('pt-BR')}
-              </span>
+              <span className="text-sm font-medium text-text-primary">{hoje || '—'}</span>
             </div>
           </div>
         </Card>

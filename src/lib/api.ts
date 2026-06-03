@@ -14,15 +14,12 @@ async function refreshAccessToken(): Promise<string | null> {
   refreshInProgress = true;
   refreshPromise = (async () => {
     try {
-      const refreshToken = localStorage.getItem(REFRESH_TOKEN_KEY);
-      if (!refreshToken) {
-        return null;
-      }
-
-      const res = await fetch(`${API_URL}/auth/refresh`, {
+      // Server route lê o refresh token do cookie httpOnly e devolve o novo par.
+      // O cliente atualiza localStorage para o próximo request usar o novo access token.
+      const res = await fetch('/api/auth/refresh', {
         method: 'POST',
+        credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ refreshToken }),
       });
 
       if (!res.ok) {
@@ -31,8 +28,15 @@ async function refreshAccessToken(): Promise<string | null> {
         return null;
       }
 
-      const data = await res.json();
+      const data = (await res.json()) as {
+        accessToken: string;
+        refreshToken?: string;
+        expiresIn?: number;
+      };
       localStorage.setItem(ACCESS_TOKEN_KEY, data.accessToken);
+      if (data.refreshToken) {
+        localStorage.setItem(REFRESH_TOKEN_KEY, data.refreshToken);
+      }
       return data.accessToken;
     } catch {
       return null;
