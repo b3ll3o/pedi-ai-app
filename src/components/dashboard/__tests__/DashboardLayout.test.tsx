@@ -89,7 +89,12 @@ describe('DashboardLayout', () => {
     (useAuth as jest.Mock).mockReturnValue({
       isAuthenticated: true,
       isLoading: false,
-      user: { id: '1', nome: 'Test User', email: 'test@test.com' },
+      user: {
+        id: '1',
+        nome: 'Test User',
+        email: 'test@test.com',
+        perfil: { id: '1', nome: 'ADMIN' },
+      },
     });
 
     render(

@@ -54,7 +54,18 @@ function LoginForm() {
     try {
       await login(email, senha);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Erro ao fazer login');
+      // Erros de rede (fetch abortado, offline, etc) vêm como TypeError com
+      // mensagem em inglês ("Failed to fetch" / "NetworkError"). Traduzimos
+      // para o usuário; credenciais inválidas (401) chegam com mensagem em
+      // PT vinda do backend e são exibidas como estão.
+      const message = err instanceof Error ? err.message : '';
+      if (/fetch|network|aborted|failed/i.test(message)) {
+        setError('Falha de conexão. Verifique sua internet e tente novamente.');
+      } else if (message) {
+        setError(message);
+      } else {
+        setError('Erro ao fazer login');
+      }
     } finally {
       setLoading(false);
     }
