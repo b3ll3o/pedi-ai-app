@@ -7,6 +7,7 @@ const config = {
   },
   moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/src/$1',
+    '\\.(css|less|scss|sass)$': '<rootDir>/__mocks__/styleMock.js',
   },
   testPathIgnorePatterns: [
     '<rootDir>/.next/',

@@ -15,7 +15,52 @@ Interface web do sistema Pedi-AI. Aplicação React com Next.js 16.
 
 ### Página Inicial (Landing)
 
-[Pendente de especificação]
+Rota: `/`. Server Component que renderiza marketing da landing page.
+
+#### Estrutura
+
+- Navbar fixa no topo (logo + navegação + CTAs)
+- Hero section (badge, título, subtítulo, CTAs, stats)
+- Social proof bar
+- Seção "Como Funciona" (id: `how-it-works`)
+- Seção "Funcionalidades" (id: `features`)
+- Seção "Depoimentos"
+- Seção "Preços" (id: `pricing`)
+- Seção "FAQ" (id: `faq`)
+- CTA final
+- Footer
+
+#### Navegação (mobile-first)
+
+A navegação pública fica em `src/components/landing/MobileNav.tsx`.
+Estratégia:
+
+- **Mobile (< 768px):** hamburger button (44×44 px) visível; nav inline
+  oculto. Tocar no hamburger abre um drawer (overlay + painel lateral)
+  com todos os links (Funcionalidades, Como Funciona, Preços) + CTAs
+  (Entrar, Começar Grátis).
+- **Desktop (≥ 768px):** nav inline visível; hamburger oculto.
+
+#### Acessibilidade da navegação
+
+- Hamburger: `aria-controls`, `aria-expanded`, `aria-label` em pt-BR
+- Drawer: `role="dialog"`, `aria-modal="true"`, `aria-labelledby`
+- ESC fecha o drawer
+- Click no backdrop fecha o drawer
+- Body scroll travado enquanto drawer está aberto
+- Foco volta para o hamburger ao fechar
+- Todos os touch targets ≥ 44×44 px
+
+#### iOS / safe areas
+
+- `min-height: 100dvh` (com fallback `100vh`) na página e hero
+- `padding-top: env(safe-area-inset-top)` na nav fixa
+
+#### CTAs principais
+
+- "Entrar" (`/login`) — oculto em viewports < 480px
+- "Começar Grátis" (`/usuarios/novo`) — sempre visível
+- "Começar Gratuitamente" (CTA do hero) — sempre visível
 
 ### Dashboard
 
@@ -38,6 +83,7 @@ Interface web do sistema Pedi-AI. Aplicação React com Next.js 16.
 ### Button
 
 Propriedades:
+
 - variant: primary | secondary | ghost | danger
 - size: sm | md | lg
 - disabled: boolean
@@ -47,6 +93,7 @@ Propriedades:
 ### Input
 
 Propriedades:
+
 - name: string
 - label: string (opcional)
 - type: text | email | password | number
@@ -56,23 +103,27 @@ Propriedades:
 ### Card
 
 Propriedades:
+
 - children: React.ReactNode
 - className: string (opcional)
 
 ### Badge
 
 Propriedades:
+
 - children: React.ReactNode
 - className: string (opcional)
 
 ### StatusBadge
 
 Propriedades:
+
 - status: string
 
 ### Table
 
 Propriedades:
+
 - columns: Array<{ key: string, label: string }>
 - data: Array<Record<string, any>>
 - onRowClick: function (opcional)
@@ -90,11 +141,8 @@ Navegação lateral com links para Dashboard, Pedidos, Usuários.
 Cores via CSS variables em globals.css:
 
 ```css
---color-primary: #0D9488
---color-secondary: #1E3A5F
---color-success: #059669
---color-warning: #D97706
---color-error: #DC2626
+--color-primary: #0d9488 --color-secondary: #1e3a5f --color-success: #059669
+  --color-warning: #d97706 --color-error: #dc2626;
 ```
 
 ## Estrutura de Diretórios

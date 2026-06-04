@@ -23,6 +23,7 @@ import {
   ChefHat,
 } from 'lucide-react';
 import Link from 'next/link';
+import { MobileNav } from '@/components/landing/MobileNav';
 import styles from './page.module.css';
 
 const faqData = [
@@ -68,15 +69,7 @@ export default function HomePage() {
           </Link>
 
           <div className={styles.navLinks}>
-            <a href="#features" className={styles.navLink}>
-              Funcionalidades
-            </a>
-            <a href="#how-it-works" className={styles.navLink}>
-              Como Funciona
-            </a>
-            <a href="#pricing" className={styles.navLink}>
-              Preços
-            </a>
+            <MobileNav />
           </div>
 
           <div className={styles.navCtas}>
