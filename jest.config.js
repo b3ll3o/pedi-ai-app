@@ -14,6 +14,9 @@ const config = {
     '<rootDir>/.next/standalone/',
     '<rootDir>/node_modules/',
   ],
+  // .next/standalone é o output de `next build` e contém um package.json
+  // duplicado — exclui do haste-map para evitar warning de colisão.
+  modulePathIgnorePatterns: ['<rootDir>/.next/', '<rootDir>/.next/standalone/'],
   collectCoverageFrom: ['src/**/*.{ts,tsx}', '!src/**/*.d.ts', '!src/app/layout.tsx'],
   coverageThreshold: {
     global: {
