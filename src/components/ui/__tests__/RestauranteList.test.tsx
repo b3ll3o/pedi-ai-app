@@ -13,6 +13,10 @@ jest.mock('@/lib/api', () => ({
   },
 }));
 
+jest.mock('@/lib/notifications', () => ({
+  useToast: () => ({ notify: jest.fn() }),
+}));
+
 const mockRestaurantes = [
   {
     id: '1',

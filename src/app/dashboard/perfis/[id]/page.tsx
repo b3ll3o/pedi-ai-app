@@ -5,20 +5,23 @@ import { useForm } from 'react-hook-form';
 import { AtualizarPerfilDto, api } from '@/lib/api';
 import { useRouter } from 'next/navigation';
 import { useParams } from 'next/navigation';
-import { Button, Input } from '@/components/ui';
+import { Button, Input, ConfirmDialog } from '@/components/ui';
 import { Perfil, Permissao } from '@/lib/api';
+import { useToast } from '@/lib/notifications';
 import { Shield, Save, X, Plus, Trash2, ArrowLeft } from 'lucide-react';
 
 export default function EditarPerfilPage() {
   const router = useRouter();
   const params = useParams();
   const id = params.id as string;
+  const { notify } = useToast();
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [perfil, setPerfil] = useState<Perfil | null>(null);
   const [todasPermissoes, setTodasPermissoes] = useState<Permissao[]>([]);
   const [associating, setAssociating] = useState(false);
   const [showAssociarModal, setShowAssociarModal] = useState(false);
+  const [confirmDesassociar, setConfirmDesassociar] = useState<string | null>(null);
 
   const {
     register,
@@ -51,21 +54,32 @@ export default function EditarPerfilPage() {
     try {
       setError(null);
       await api.perfis.atualizar(id, data);
+      notify('Perfil atualizado com sucesso', 'success');
       router.push('/dashboard/perfis');
       router.refresh();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Erro ao atualizar');
+      const msg = err instanceof Error ? err.message : 'Erro ao atualizar';
+      setError(msg);
+      notify(msg, 'error');
     }
   };
 
-  const handleDesassociar = async (permissaoId: string) => {
-    if (!confirm('Deseja remover esta permissão do perfil?')) return;
+  const requestDesassociar = (permissaoId: string) => {
+    setConfirmDesassociar(permissaoId);
+  };
+
+  const handleDesassociar = async () => {
+    const permissaoId = confirmDesassociar;
+    if (!permissaoId) return;
     try {
       await api.perfis.desassociarPermissao(id, permissaoId);
       const perfilAtualizado = await api.perfis.listarUm(id);
       setPerfil(perfilAtualizado);
+      notify('Permissão removida do perfil', 'success');
     } catch (err) {
-      alert(err instanceof Error ? err.message : 'Erro ao remover');
+      notify(err instanceof Error ? err.message : 'Erro ao remover', 'error');
+    } finally {
+      setConfirmDesassociar(null);
     }
   };
 
@@ -76,8 +90,9 @@ export default function EditarPerfilPage() {
       const perfilAtualizado = await api.perfis.listarUm(id);
       setPerfil(perfilAtualizado);
       setShowAssociarModal(false);
+      notify('Permissão associada ao perfil', 'success');
     } catch (err) {
-      alert(err instanceof Error ? err.message : 'Erro ao associar');
+      notify(err instanceof Error ? err.message : 'Erro ao associar', 'error');
     } finally {
       setAssociating(false);
     }
@@ -171,7 +186,7 @@ export default function EditarPerfilPage() {
                 <Button
                   variant="ghost"
                   size="sm"
-                  onClick={() => handleDesassociar(permissao.id)}
+                  onClick={() => requestDesassociar(permissao.id)}
                   className="text-error hover:bg-error/10"
                 >
                   <Trash2 className="w-4 h-4" />
@@ -230,6 +245,15 @@ export default function EditarPerfilPage() {
           </div>
         </div>
       )}
+
+      <ConfirmDialog
+        open={confirmDesassociar !== null}
+        onClose={() => setConfirmDesassociar(null)}
+        onConfirm={handleDesassociar}
+        title="Remover permissão do perfil"
+        description="Tem certeza que deseja remover esta permissão do perfil? Esta ação não pode ser desfeita."
+        confirmLabel="Remover"
+      />
     </div>
   );
 }

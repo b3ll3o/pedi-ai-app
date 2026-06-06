@@ -1,14 +1,19 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Button } from '@/components/ui';
+import { useRouter } from 'next/navigation';
+import { Button, ConfirmDialog } from '@/components/ui';
 import { AdminOnly } from '@/components/auth/AdminOnly';
 import { api, Restaurante } from '@/lib/api';
+import { useToast } from '@/lib/notifications';
 import { Building2, MapPin, RefreshCw, Edit2, Trash2 } from 'lucide-react';
 
 export default function RestaurantesPage() {
+  const router = useRouter();
+  const { notify } = useToast();
   const [restaurantes, setRestaurantes] = useState<Restaurante[]>([]);
   const [loading, setLoading] = useState(true);
+  const [confirmDelete, setConfirmDelete] = useState<{ id: string; nome: string } | null>(null);
 
   const carregarRestaurantes = async () => {
     setLoading(true);
@@ -17,6 +22,7 @@ export default function RestaurantesPage() {
       setRestaurantes(dados);
     } catch (err) {
       console.error(err);
+      notify(err instanceof Error ? err.message : 'Erro ao carregar', 'error');
     } finally {
       setLoading(false);
     }
@@ -26,13 +32,21 @@ export default function RestaurantesPage() {
     carregarRestaurantes();
   }, []);
 
-  const handleDelete = async (id: string, nome: string) => {
-    if (!confirm(`Deseja excluir o restaurante "${nome}"?`)) return;
+  const requestDelete = (id: string, nome: string) => {
+    setConfirmDelete({ id, nome });
+  };
+
+  const handleDelete = async () => {
+    if (!confirmDelete) return;
+    const { id, nome } = confirmDelete;
     try {
       await api.restaurantes.deletar(id);
       setRestaurantes((prev) => prev.filter((r) => r.id !== id));
+      notify(`Restaurante "${nome}" excluido com sucesso`, 'success');
     } catch (err) {
-      alert(err instanceof Error ? err.message : 'Erro ao excluir');
+      notify(err instanceof Error ? err.message : 'Erro ao excluir', 'error');
+    } finally {
+      setConfirmDelete(null);
     }
   };
 
@@ -51,9 +65,7 @@ export default function RestaurantesPage() {
             </div>
           </div>
           <AdminOnly>
-            <Button onClick={() => (window.location.href = '/restaurantes/novo')}>
-              Novo Restaurante
-            </Button>
+            <Button onClick={() => router.push('/restaurantes/novo')}>Novo Restaurante</Button>
           </AdminOnly>
         </div>
 
@@ -154,15 +166,16 @@ export default function RestaurantesPage() {
                         <Button
                           variant="ghost"
                           size="sm"
-                          onClick={() => (window.location.href = `/restaurantes/${restaurante.id}`)}
+                          onClick={() => router.push(`/restaurantes/${restaurante.id}`)}
                         >
                           <Edit2 className="w-4 h-4" />
                         </Button>
                         <Button
                           variant="ghost"
                           size="sm"
-                          onClick={() => handleDelete(restaurante.id, restaurante.nome)}
+                          onClick={() => requestDelete(restaurante.id, restaurante.nome)}
                           className="text-error hover:bg-error/10"
+                          aria-label={`Excluir restaurante ${restaurante.nome}`}
                         >
                           <Trash2 className="w-4 h-4" />
                         </Button>
@@ -187,6 +200,19 @@ export default function RestaurantesPage() {
           </div>
         )}
       </div>
+
+      <ConfirmDialog
+        open={confirmDelete !== null}
+        onClose={() => setConfirmDelete(null)}
+        onConfirm={handleDelete}
+        title="Excluir restaurante"
+        description={
+          confirmDelete
+            ? `Tem certeza que deseja excluir o restaurante "${confirmDelete.nome}"? Esta ação não pode ser desfeita.`
+            : ''
+        }
+        confirmLabel="Excluir"
+      />
     </div>
   );
 }

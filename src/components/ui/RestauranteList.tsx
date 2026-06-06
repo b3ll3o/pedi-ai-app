@@ -2,7 +2,8 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { api, Restaurante } from '@/lib/api';
-import { Button } from '@/components/ui';
+import { Button, ConfirmDialog } from '@/components/ui';
+import { useToast } from '@/lib/notifications';
 import { Building2, RefreshCw, Trash2 } from 'lucide-react';
 
 interface RestauranteListProps {
@@ -21,6 +22,8 @@ export function RestauranteList({
   const [restaurantes, setRestaurantes] = useState<Restaurante[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [confirmDelete, setConfirmDelete] = useState<{ id: string; nome: string } | null>(null);
+  const { notify } = useToast();
 
   const carregarRestaurantes = useCallback(async () => {
     if (loadingExterno !== undefined) return;
@@ -45,14 +48,22 @@ export function RestauranteList({
     }
   }, [restaurantesExternos, carregarRestaurantes]);
 
-  const handleDelete = async (id: string, nome: string) => {
-    if (!confirm(`Deseja excluir o restaurante "${nome}"?`)) return;
+  const requestDelete = (id: string, nome: string) => {
+    setConfirmDelete({ id, nome });
+  };
+
+  const handleDelete = async () => {
+    if (!confirmDelete) return;
+    const { id, nome } = confirmDelete;
     try {
       await api.restaurantes.deletar(id);
       setRestaurantes((prev) => prev.filter((r) => r.id !== id));
+      notify(`Restaurante "${nome}" excluido com sucesso`, 'success');
       onDeletar?.(id);
     } catch (err) {
-      alert(err instanceof Error ? err.message : 'Erro ao excluir');
+      notify(err instanceof Error ? err.message : 'Erro ao excluir', 'error');
+    } finally {
+      setConfirmDelete(null);
     }
   };
 
@@ -162,7 +173,7 @@ export function RestauranteList({
                         <Button
                           variant="ghost"
                           size="sm"
-                          onClick={() => handleDelete(restaurante.id, restaurante.nome)}
+                          onClick={() => requestDelete(restaurante.id, restaurante.nome)}
                           className="text-error hover:bg-error/10"
                         >
                           <Trash2 className="w-4 h-4" />
@@ -184,6 +195,19 @@ export function RestauranteList({
           </div>
         )}
       </div>
+
+      <ConfirmDialog
+        open={confirmDelete !== null}
+        onClose={() => setConfirmDelete(null)}
+        onConfirm={handleDelete}
+        title="Excluir restaurante"
+        description={
+          confirmDelete
+            ? `Tem certeza que deseja excluir o restaurante "${confirmDelete.nome}"? Esta ação não pode ser desfeita.`
+            : ''
+        }
+        confirmLabel="Excluir"
+      />
     </div>
   );
 }

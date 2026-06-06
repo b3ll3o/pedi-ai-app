@@ -126,7 +126,8 @@ describe('AuthProvider', () => {
     });
     expect(screen.getByTestId('user')).toHaveTextContent('test@test.com');
     expect(localStorage.getItem('pedi_auth_access_token')).toBe('new-token');
-    expect(localStorage.getItem('pedi_auth_refresh_token')).toBe('refresh-token');
+    // refresh token fica APENAS no cookie httpOnly, nunca em localStorage
+    expect(localStorage.getItem('pedi_auth_refresh_token')).toBeNull();
   });
 
   it('login failed keeps user unauthenticated', async () => {
@@ -154,9 +155,10 @@ describe('AuthProvider', () => {
     });
   });
 
-  it('logout clears state and storage', async () => {
+  it('logout clears state and storage (incl. legacy refresh token)', async () => {
     const storedUser = { id: '1', nome: 'Test', email: 'test@test.com' };
     localStorage.setItem('pedi_auth_access_token', 'fake-token');
+    // Simula legacy: alguém com versão antiga ainda tem o refresh no localStorage
     localStorage.setItem('pedi_auth_refresh_token', 'refresh-token');
     localStorage.setItem('pedi_auth_user', JSON.stringify(storedUser));
 

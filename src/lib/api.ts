@@ -1,7 +1,10 @@
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001';
 
 const ACCESS_TOKEN_KEY = 'pedi_auth_access_token';
-const REFRESH_TOKEN_KEY = 'pedi_auth_refresh_token';
+// Refresh token NÃO é armazenado em localStorage — o cookie httpOnly
+// é a única fonte. Limpa qualquer cópia antiga deixada por versões
+// anteriores (migração de segurança).
+const LEGACY_REFRESH_TOKEN_KEY = 'pedi_auth_refresh_token';
 
 let refreshInProgress = false;
 let refreshPromise: Promise<string | null> | null = null;
@@ -14,8 +17,9 @@ async function refreshAccessToken(): Promise<string | null> {
   refreshInProgress = true;
   refreshPromise = (async () => {
     try {
-      // Server route lê o refresh token do cookie httpOnly e devolve o novo par.
-      // O cliente atualiza localStorage para o próximo request usar o novo access token.
+      // Server route lê o refresh do cookie httpOnly e devolve o novo par.
+      // O novo refresh também é persistido APENAS no cookie (Set-Cookie da
+      // resposta). O cliente só precisa guardar o novo accessToken.
       const res = await fetch('/api/auth/refresh', {
         method: 'POST',
         credentials: 'include',
@@ -24,19 +28,15 @@ async function refreshAccessToken(): Promise<string | null> {
 
       if (!res.ok) {
         localStorage.removeItem(ACCESS_TOKEN_KEY);
-        localStorage.removeItem(REFRESH_TOKEN_KEY);
+        localStorage.removeItem(LEGACY_REFRESH_TOKEN_KEY);
         return null;
       }
 
       const data = (await res.json()) as {
         accessToken: string;
-        refreshToken?: string;
         expiresIn?: number;
       };
       localStorage.setItem(ACCESS_TOKEN_KEY, data.accessToken);
-      if (data.refreshToken) {
-        localStorage.setItem(REFRESH_TOKEN_KEY, data.refreshToken);
-      }
       return data.accessToken;
     } catch {
       return null;

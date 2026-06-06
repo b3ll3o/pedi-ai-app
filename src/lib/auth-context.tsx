@@ -34,13 +34,17 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 const ACCESS_TOKEN_KEY = 'pedi_auth_access_token';
-const REFRESH_TOKEN_KEY = 'pedi_auth_refresh_token';
+// Refresh token NÃO é armazenado em localStorage — o cookie httpOnly
+// (setado pela rota /api/auth/login) é a única fonte da verdade. Manter
+// o refresh no localStorage seria uma porta de entrada para XSS obter
+// um token válido por 7 dias.
 const USER_KEY = 'pedi_auth_user';
 
 function clearAuthStorage() {
   localStorage.removeItem(ACCESS_TOKEN_KEY);
-  localStorage.removeItem(REFRESH_TOKEN_KEY);
   localStorage.removeItem(USER_KEY);
+  // Limpa chave legacy de refresh token (versões anteriores ao fix de XSS).
+  localStorage.removeItem('pedi_auth_refresh_token');
 }
 
 export function AuthProvider({ children }: { children: ReactNode }) {
@@ -123,7 +127,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const tokens: TokenResponse = await res.json();
 
     localStorage.setItem(ACCESS_TOKEN_KEY, tokens.accessToken);
-    localStorage.setItem(REFRESH_TOKEN_KEY, tokens.refreshToken);
+    // refreshToken fica no cookie httpOnly, NÃO é persistido em localStorage.
 
     const meRes = await fetch(`${API_URL}/auth/me`, {
       credentials: 'include',

@@ -2,12 +2,14 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { Button, Input, Modal } from '@/components/ui';
+import { Button, Input, Modal, ConfirmDialog } from '@/components/ui';
 import { api, Permissao } from '@/lib/api';
+import { useToast } from '@/lib/notifications';
 import { Key, Plus, RefreshCw, Trash2, Edit2 } from 'lucide-react';
 
 export default function PermissoesPage() {
   const router = useRouter();
+  const { notify } = useToast();
   const [permissoes, setPermissoes] = useState<Permissao[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -16,6 +18,7 @@ export default function PermissoesPage() {
   const [novaChave, setNovaChave] = useState('');
   const [novaDescricao, setNovaDescricao] = useState('');
   const [creating, setCreating] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState<{ id: string; nome: string } | null>(null);
 
   const carregarPermissoes = async () => {
     setLoading(true);
@@ -24,7 +27,9 @@ export default function PermissoesPage() {
       const dados = await api.permissoes.listarTodos();
       setPermissoes(dados);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Erro ao carregar');
+      const msg = err instanceof Error ? err.message : 'Erro ao carregar';
+      setError(msg);
+      notify(msg, 'error');
     } finally {
       setLoading(false);
     }
@@ -45,21 +50,30 @@ export default function PermissoesPage() {
       setNovaChave('');
       setNovaDescricao('');
       setShowModal(false);
+      notify('Permissão criada com sucesso', 'success');
       await carregarPermissoes();
     } catch (err) {
-      alert(err instanceof Error ? err.message : 'Erro ao criar');
+      notify(err instanceof Error ? err.message : 'Erro ao criar', 'error');
     } finally {
       setCreating(false);
     }
   };
 
-  const handleDelete = async (id: string, nome: string) => {
-    if (!confirm(`Deseja excluir a permissão "${nome}"?`)) return;
+  const requestDelete = (id: string, nome: string) => {
+    setConfirmDelete({ id, nome });
+  };
+
+  const handleDelete = async () => {
+    if (!confirmDelete) return;
+    const { id, nome } = confirmDelete;
     try {
       await api.permissoes.deletar(id);
       setPermissoes((prev) => prev.filter((p) => p.id !== id));
+      notify(`Permissão "${nome}" excluída com sucesso`, 'success');
     } catch (err) {
-      alert(err instanceof Error ? err.message : 'Erro ao excluir');
+      notify(err instanceof Error ? err.message : 'Erro ao excluir', 'error');
+    } finally {
+      setConfirmDelete(null);
     }
   };
 
@@ -222,7 +236,7 @@ export default function PermissoesPage() {
                         <Button
                           variant="ghost"
                           size="sm"
-                          onClick={() => handleDelete(permissao.id, permissao.nome)}
+                          onClick={() => requestDelete(permissao.id, permissao.nome)}
                           className="text-error hover:bg-error/10"
                           aria-label={`Excluir permissão ${permissao.nome}`}
                         >
@@ -249,6 +263,19 @@ export default function PermissoesPage() {
           </div>
         )}
       </div>
+
+      <ConfirmDialog
+        open={confirmDelete !== null}
+        onClose={() => setConfirmDelete(null)}
+        onConfirm={handleDelete}
+        title="Excluir permissão"
+        description={
+          confirmDelete
+            ? `Tem certeza que deseja excluir a permissão "${confirmDelete.nome}"? Esta ação não pode ser desfeita.`
+            : ''
+        }
+        confirmLabel="Excluir"
+      />
     </div>
   );
 }

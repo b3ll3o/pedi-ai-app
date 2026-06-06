@@ -1,8 +1,10 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { api, Usuario } from '@/lib/api';
-import { Button, Input, Modal } from '@/components/ui';
+import { Button, Input, Modal, ConfirmDialog } from '@/components/ui';
+import { useToast } from '@/lib/notifications';
 import { User, Plus, RefreshCw, Trash2, Edit2, Users } from 'lucide-react';
 
 interface UsuarioListProps {
@@ -10,7 +12,11 @@ interface UsuarioListProps {
 }
 
 export function UsuarioList({ onUsuarioCriado }: UsuarioListProps) {
+  const router = useRouter();
+  const { notify } = useToast();
   const [usuarios, setUsuarios] = useState<Usuario[]>([]);
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
+  const [confirmDeleteNome, setConfirmDeleteNome] = useState<string>('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showModal, setShowModal] = useState(false);
@@ -50,19 +56,28 @@ export function UsuarioList({ onUsuarioCriado }: UsuarioListProps) {
       onUsuarioCriado?.();
       await carregarUsuarios();
     } catch (err) {
-      alert(err instanceof Error ? err.message : 'Erro ao criar');
+      notify(err instanceof Error ? err.message : 'Erro ao criar', 'error');
     } finally {
       setCreating(false);
     }
   };
 
-  const handleDelete = async (id: string, nome: string) => {
-    if (!confirm(`Deseja excluir o usuário "${nome}"?`)) return;
+  const requestDelete = (id: string, nome: string) => {
+    setConfirmDeleteId(id);
+    setConfirmDeleteNome(nome);
+  };
+
+  const handleDelete = async () => {
+    if (!confirmDeleteId) return;
     try {
-      await api.usuarios.deletar(id);
-      setUsuarios((prev) => prev.filter((u) => u.id !== id));
+      await api.usuarios.deletar(confirmDeleteId);
+      setUsuarios((prev) => prev.filter((u) => u.id !== confirmDeleteId));
+      notify('Usuário excluído com sucesso', 'success');
     } catch (err) {
-      alert(err instanceof Error ? err.message : 'Erro ao excluir');
+      notify(err instanceof Error ? err.message : 'Erro ao excluir', 'error');
+    } finally {
+      setConfirmDeleteId(null);
+      setConfirmDeleteNome('');
     }
   };
 
@@ -175,9 +190,7 @@ export function UsuarioList({ onUsuarioCriado }: UsuarioListProps) {
                         <Button
                           variant="ghost"
                           size="sm"
-                          onClick={() =>
-                            (window.location.href = `/dashboard/usuarios/${usuario.id}`)
-                          }
+                          onClick={() => router.push(`/dashboard/usuarios/${usuario.id}`)}
                           aria-label={`Editar usuário ${usuario.nome}`}
                         >
                           <Edit2 className="w-4 h-4" aria-hidden="true" />
@@ -185,7 +198,7 @@ export function UsuarioList({ onUsuarioCriado }: UsuarioListProps) {
                         <Button
                           variant="ghost"
                           size="sm"
-                          onClick={() => handleDelete(usuario.id, usuario.nome)}
+                          onClick={() => requestDelete(usuario.id, usuario.nome)}
                           className="text-error hover:bg-error/10"
                           aria-label={`Excluir usuário ${usuario.nome}`}
                         >
@@ -212,6 +225,18 @@ export function UsuarioList({ onUsuarioCriado }: UsuarioListProps) {
           </div>
         )}
       </div>
+
+      <ConfirmDialog
+        open={confirmDeleteId !== null}
+        onClose={() => {
+          setConfirmDeleteId(null);
+          setConfirmDeleteNome('');
+        }}
+        onConfirm={handleDelete}
+        title="Excluir usuário"
+        description={`Tem certeza que deseja excluir o usuário "${confirmDeleteNome}"? Esta ação não pode ser desfeita.`}
+        confirmLabel="Excluir"
+      />
     </div>
   );
 }
