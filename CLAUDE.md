@@ -57,7 +57,6 @@ src/
 │   ├── api.ts                    # Cliente fetch com auto-refresh 401
 │   └── auth-context.tsx          # AuthProvider + useAuth (dual storage: localStorage + cookie)
 └── proxy.ts                      # Gate server-side (Next.js 16 substituiu middleware.ts por proxy.ts): redireciona /dashboard/* e /restaurantes/* sem cookie
-openspec/                         # specs/, changes/, archive/ — ver CLAUDE.md do monorepo
 ```
 
 **Exceção de roteamento (histórica):** `restaurantes` está em `/restaurantes`, **não** em `/dashboard/restaurantes`. Hoje o `proxy.ts` **já protege** essa rota (matcher inclui `/restaurantes/:path*`), mas vale manter em mente ao reorganizar.
