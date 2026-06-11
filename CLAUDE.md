@@ -117,22 +117,25 @@ Definidos em `src/app/globals.css` via Tailwind v4 `@theme`:
 
 ---
 
-## OpenSpec + DDD
+## Agent-Skills + DDD
 
-Metodologia, classificação, estados de spec, template, e regras de traceability estão no **`/home/leo/pedi-ai/CLAUDE.md`** (monorepo). Resumo local:
+Metodologia, skills base, personas, slash commands e regras de traceability estão no **`/home/leo/pedi-ai/CLAUDE.md`** (monorepo). Resumo local:
 
-- Specs: `openspec/specs/<domain>/spec.md`
-- Changes: `openspec/changes/<feature>/{proposal,design,tasks}.md`
+- Skills de domínio: `.claude/skills/<dominio>/SKILL.md`
+- Skills base: `.claude/skills/<skill-base>/SKILL.md`
+- Personas: `.claude/agents/<persona>.md`
+- Slash commands: `.claude/commands/<cmd>.md`
 - Idioma: **pt-BR** em código e docs
 - Coverage: **80%** enforced em `jest.config.js` (`coverageThreshold.global`)
-- Implementação só após spec `approved`
 
-**Specs existentes neste app** (`openspec/specs/`):
+**Skills de domínio neste app** (`.claude/skills/`):
 - `app/` — estrutura raiz e providers
-- `auth/` — autenticação
+- `auth/` — autenticação (AuthContext, dual storage, ProtectedRoute, auto-refresh)
 - `dashboard/` — rotas autenticadas
 - `infra/` — build, deploy, configuração
 - `seo/` — sitemap, robots, metadata
+
+**Skills base específicas do app**: `frontend-ui-engineering` (carregue ao mexer em componentes UI, design tokens, ou Server/Client Components).
 
 ---
 
