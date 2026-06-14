@@ -225,7 +225,9 @@ export const api = {
   },
 
   usuarios: {
-    listarTodos: () => fetchJson<Usuario[]>(`${API_URL}/users`),
+    listarTodos: (signal?: AbortSignal) => fetchJson<Usuario[]>(`${API_URL}/users`, { signal }),
+
+    contar: () => fetchJson<{ total: number }>(`${API_URL}/users/count`),
 
     listarUm: (id: string) => fetchJson<Usuario>(`${API_URL}/users/${id}`),
 
@@ -250,7 +252,10 @@ export const api = {
   },
 
   permissoes: {
-    listarTodos: () => fetchJson<Permissao[]>(`${API_URL}/permissoes`),
+    listarTodos: (signal?: AbortSignal) =>
+      fetchJson<Permissao[]>(`${API_URL}/permissoes`, { signal }),
+
+    contar: () => fetchJson<{ total: number }>(`${API_URL}/permissoes/count`),
 
     listarUm: (id: string) => fetchJson<Permissao>(`${API_URL}/permissoes/${id}`),
 
@@ -273,7 +278,9 @@ export const api = {
   },
 
   perfis: {
-    listarTodos: () => fetchJson<Perfil[]>(`${API_URL}/perfis`),
+    listarTodos: (signal?: AbortSignal) => fetchJson<Perfil[]>(`${API_URL}/perfis`, { signal }),
+
+    contar: () => fetchJson<{ total: number }>(`${API_URL}/perfis/count`),
 
     listarUm: (id: string) => fetchJson<Perfil>(`${API_URL}/perfis/${id}`),
 
@@ -307,7 +314,10 @@ export const api = {
   },
 
   restaurantes: {
-    listarTodos: () => fetchJson<Restaurante[]>(`${API_URL}/restaurants`),
+    listarTodos: (signal?: AbortSignal) =>
+      fetchJson<Restaurante[]>(`${API_URL}/restaurants`, { signal }),
+
+    contar: () => fetchJson<{ total: number }>(`${API_URL}/restaurants/count`),
 
     listarUm: (id: string) => fetchJson<Restaurante>(`${API_URL}/restaurants/${id}`),
 

@@ -1,39 +1,31 @@
 import React from 'react';
 import { render, screen } from '@testing-library/react';
-import { DashboardLayout } from '../DashboardLayout';
+import { AuthenticatedLayout } from '../AuthenticatedLayout';
 
 const mockPush = jest.fn();
+const mockPathname = jest.fn(() => '/dashboard');
 
 jest.mock('next/navigation', () => ({
   useRouter: () => ({
     push: mockPush,
   }),
-  usePathname: () => '/dashboard/usuarios',
+  usePathname: () => mockPathname(),
 }));
 
 jest.mock('@/lib/auth-context', () => ({
   useAuth: jest.fn(),
 }));
 
-jest.mock('../Sidebar', () => ({
+jest.mock('@/components/dashboard/Sidebar', () => ({
   Sidebar: () => <div data-testid="mock-sidebar">Sidebar</div>,
-}));
-
-jest.mock('../SidebarContext', () => ({
-  SidebarProvider: ({ children }: { children: React.ReactNode }) => children,
-  useSidebar: () => ({
-    isOpen: false,
-    open: jest.fn(),
-    close: jest.fn(),
-    toggle: jest.fn(),
-  }),
 }));
 
 import { useAuth } from '@/lib/auth-context';
 
-describe('DashboardLayout', () => {
+describe('AuthenticatedLayout', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    mockPathname.mockReturnValue('/dashboard');
   });
 
   it('shows loading spinner when isLoading is true', () => {
@@ -44,9 +36,9 @@ describe('DashboardLayout', () => {
     });
 
     render(
-      <DashboardLayout>
+      <AuthenticatedLayout>
         <div>Dashboard Content</div>
-      </DashboardLayout>,
+      </AuthenticatedLayout>,
     );
 
     const spinner = document.querySelector('.animate-spin');
@@ -61,9 +53,9 @@ describe('DashboardLayout', () => {
     });
 
     const { container } = render(
-      <DashboardLayout>
+      <AuthenticatedLayout>
         <div>Dashboard Content</div>
-      </DashboardLayout>,
+      </AuthenticatedLayout>,
     );
 
     expect(container).toBeEmptyDOMElement();
@@ -77,9 +69,9 @@ describe('DashboardLayout', () => {
     });
 
     render(
-      <DashboardLayout>
+      <AuthenticatedLayout>
         <div>Dashboard Content</div>
-      </DashboardLayout>,
+      </AuthenticatedLayout>,
     );
 
     expect(mockPush).toHaveBeenCalledWith('/login');
@@ -98,28 +90,57 @@ describe('DashboardLayout', () => {
     });
 
     render(
-      <DashboardLayout>
-        <div>Dashboard Content</div>
-      </DashboardLayout>,
+      <AuthenticatedLayout>
+        <div>Page Content</div>
+      </AuthenticatedLayout>,
     );
 
-    expect(screen.getByText('Dashboard Content')).toBeInTheDocument();
+    expect(screen.getByText('Page Content')).toBeInTheDocument();
     expect(screen.getByTestId('mock-sidebar')).toBeInTheDocument();
   });
 
-  it('does not render children when user is null', () => {
+  it('redirects non-ADMIN when current path is adminOnly', () => {
+    mockPathname.mockReturnValue('/dashboard/usuarios');
     (useAuth as jest.Mock).mockReturnValue({
       isAuthenticated: true,
       isLoading: false,
-      user: null,
+      user: {
+        id: '1',
+        nome: 'Regular User',
+        email: 'user@test.com',
+        perfil: { id: '2', nome: 'USUARIO' },
+      },
     });
 
     render(
-      <DashboardLayout>
-        <div>Dashboard Content</div>
-      </DashboardLayout>,
+      <AuthenticatedLayout>
+        <div>Should not render</div>
+      </AuthenticatedLayout>,
     );
 
-    expect(screen.queryByText('Dashboard Content')).not.toBeInTheDocument();
+    expect(mockPush).toHaveBeenCalledWith('/dashboard');
+    expect(screen.queryByText('Should not render')).not.toBeInTheDocument();
+  });
+
+  it('renders for ADMIN on adminOnly path', () => {
+    mockPathname.mockReturnValue('/dashboard/usuarios');
+    (useAuth as jest.Mock).mockReturnValue({
+      isAuthenticated: true,
+      isLoading: false,
+      user: {
+        id: '1',
+        nome: 'Admin User',
+        email: 'admin@test.com',
+        perfil: { id: '1', nome: 'ADMIN' },
+      },
+    });
+
+    render(
+      <AuthenticatedLayout>
+        <div>Admin content</div>
+      </AuthenticatedLayout>,
+    );
+
+    expect(screen.getByText('Admin content')).toBeInTheDocument();
   });
 });

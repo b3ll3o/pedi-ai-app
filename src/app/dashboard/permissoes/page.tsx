@@ -1,43 +1,29 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Button, Input, Modal, ConfirmDialog } from '@/components/ui';
+import { Button, Input, Modal, ConfirmDialog, CrudPageHeader, RowActions } from '@/components/ui';
 import { api, Permissao } from '@/lib/api';
+import { useAsyncList } from '@/lib/hooks/useAsyncList';
 import { useToast } from '@/lib/notifications';
-import { Key, Plus, RefreshCw, Trash2, Edit2 } from 'lucide-react';
+import { Key, Plus, RefreshCw } from 'lucide-react';
 
 export default function PermissoesPage() {
   const router = useRouter();
   const { notify } = useToast();
-  const [permissoes, setPermissoes] = useState<Permissao[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const {
+    data: permissoes,
+    loading,
+    error,
+    reload,
+    setData,
+  } = useAsyncList<Permissao>((signal) => api.permissoes.listarTodos(signal));
   const [showModal, setShowModal] = useState(false);
   const [novoNome, setNovoNome] = useState('');
   const [novaChave, setNovaChave] = useState('');
   const [novaDescricao, setNovaDescricao] = useState('');
   const [creating, setCreating] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState<{ id: string; nome: string } | null>(null);
-
-  const carregarPermissoes = async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      const dados = await api.permissoes.listarTodos();
-      setPermissoes(dados);
-    } catch (err) {
-      const msg = err instanceof Error ? err.message : 'Erro ao carregar';
-      setError(msg);
-      notify(msg, 'error');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    carregarPermissoes();
-  }, []);
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -51,7 +37,7 @@ export default function PermissoesPage() {
       setNovaDescricao('');
       setShowModal(false);
       notify('Permissão criada com sucesso', 'success');
-      await carregarPermissoes();
+      await reload();
     } catch (err) {
       notify(err instanceof Error ? err.message : 'Erro ao criar', 'error');
     } finally {
@@ -68,7 +54,7 @@ export default function PermissoesPage() {
     const { id, nome } = confirmDelete;
     try {
       await api.permissoes.deletar(id);
-      setPermissoes((prev) => prev.filter((p) => p.id !== id));
+      setData((prev) => prev.filter((p) => p.id !== id));
       notify(`Permissão "${nome}" excluída com sucesso`, 'success');
     } catch (err) {
       notify(err instanceof Error ? err.message : 'Erro ao excluir', 'error');
@@ -88,39 +74,30 @@ export default function PermissoesPage() {
     setNovaChave(`${sanitizedRecurso}:${sanitizedAcao}`);
   };
 
+  const stats = [
+    {
+      label: 'Total',
+      value: permissoes.length,
+      icon: Key,
+      color: 'bg-warning/10 text-warning',
+    },
+  ];
+
   return (
     <div className="space-y-6">
-      <div className="bg-surface rounded-2xl shadow-sm border border-border p-6">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div className="flex items-center gap-4">
-            <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-warning to-amber-600 flex items-center justify-center shadow-md">
-              <Key className="w-7 h-7 text-white" />
-            </div>
-            <div>
-              <h1 className="text-2xl font-bold text-text-primary">Permissões</h1>
-              <p className="text-text-secondary mt-0.5">Gerencie permissões de acesso</p>
-            </div>
-          </div>
+      <CrudPageHeader
+        icon={Key}
+        title="Permissões"
+        description="Gerencie permissões de acesso"
+        accent="warning"
+        actions={
           <Button onClick={() => setShowModal(true)}>
             <Plus className="w-5 h-5 mr-2" />
             Nova Permissão
           </Button>
-        </div>
-
-        <div className="grid grid-cols-2 gap-4 mt-6 pt-6 border-t border-border">
-          <div className="flex items-center gap-3 p-4 bg-background rounded-xl">
-            <div className="w-10 h-10 rounded-lg bg-warning/10 flex items-center justify-center">
-              <Key className="w-5 h-5 text-warning" />
-            </div>
-            <div>
-              <p className="text-2xl font-bold text-text-primary">
-                {loading ? '-' : permissoes.length}
-              </p>
-              <p className="text-sm text-text-secondary">Total</p>
-            </div>
-          </div>
-        </div>
-      </div>
+        }
+        stats={stats}
+      />
 
       {error && (
         <div className="bg-error/10 border border-error/20 text-error px-4 py-3 rounded-xl flex items-center gap-3">
@@ -176,7 +153,7 @@ export default function PermissoesPage() {
               <p className="text-text-secondary text-sm mb-6">
                 Comece adicionando sua primeira permissão
               </p>
-              <Button variant="secondary" onClick={carregarPermissoes}>
+              <Button variant="secondary" onClick={reload}>
                 <RefreshCw className="w-4 h-4 mr-2" />
                 Atualizar Lista
               </Button>
@@ -185,16 +162,28 @@ export default function PermissoesPage() {
             <table className="w-full">
               <thead className="bg-gradient-to-r from-background to-background/80 border-b border-border">
                 <tr>
-                  <th className="px-5 py-4 text-left text-xs font-semibold text-text-secondary uppercase tracking-wider">
+                  <th
+                    scope="col"
+                    className="px-5 py-4 text-left text-xs font-semibold text-text-secondary uppercase tracking-wider"
+                  >
                     Nome
                   </th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-text-secondary uppercase tracking-wider">
+                  <th
+                    scope="col"
+                    className="px-4 py-3 text-left text-xs font-semibold text-text-secondary uppercase tracking-wider"
+                  >
                     Chave
                   </th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-text-secondary uppercase tracking-wider">
+                  <th
+                    scope="col"
+                    className="px-4 py-3 text-left text-xs font-semibold text-text-secondary uppercase tracking-wider"
+                  >
                     Descrição
                   </th>
-                  <th className="px-4 py-3 text-right text-xs font-semibold text-text-secondary uppercase tracking-wider">
+                  <th
+                    scope="col"
+                    className="px-4 py-3 text-right text-xs font-semibold text-text-secondary uppercase tracking-wider"
+                  >
                     Ações
                   </th>
                 </tr>
@@ -224,25 +213,12 @@ export default function PermissoesPage() {
                       )}
                     </td>
                     <td className="px-4 py-4">
-                      <div className="flex justify-end gap-2 opacity-80 group-hover:opacity-100 transition-opacity">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => router.push(`/dashboard/permissoes/${permissao.id}`)}
-                          aria-label={`Editar permissão ${permissao.nome}`}
-                        >
-                          <Edit2 className="w-4 h-4" aria-hidden="true" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => requestDelete(permissao.id, permissao.nome)}
-                          className="text-error hover:bg-error/10"
-                          aria-label={`Excluir permissão ${permissao.nome}`}
-                        >
-                          <Trash2 className="w-4 h-4" aria-hidden="true" />
-                        </Button>
-                      </div>
+                      <RowActions
+                        editLabel={`Editar permissão ${permissao.nome}`}
+                        deleteLabel={`Excluir permissão ${permissao.nome}`}
+                        onEdit={() => router.push(`/dashboard/permissoes/${permissao.id}`)}
+                        onDelete={() => requestDelete(permissao.id, permissao.nome)}
+                      />
                     </td>
                   </tr>
                 ))}
@@ -256,7 +232,7 @@ export default function PermissoesPage() {
               {permissoes.length} permissão{permissoes.length !== 1 ? 's' : ''} encontrada
               {permissoes.length !== 1 ? 's' : ''}
             </p>
-            <Button variant="ghost" size="sm" onClick={carregarPermissoes} loading={loading}>
+            <Button variant="ghost" size="sm" onClick={reload} loading={loading}>
               <RefreshCw className={`w-4 h-4 mr-1 ${loading ? 'animate-spin' : ''}`} />
               Atualizar
             </Button>

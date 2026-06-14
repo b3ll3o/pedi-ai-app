@@ -1,36 +1,24 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Button, ConfirmDialog } from '@/components/ui';
+import { Button, ConfirmDialog, CrudPageHeader, RowActions } from '@/components/ui';
 import { AdminOnly } from '@/components/auth/AdminOnly';
 import { api, Restaurante } from '@/lib/api';
+import { useAsyncList } from '@/lib/hooks/useAsyncList';
 import { useToast } from '@/lib/notifications';
-import { Building2, MapPin, RefreshCw, Edit2, Trash2 } from 'lucide-react';
+import { Building2, MapPin, RefreshCw } from 'lucide-react';
 
 export default function RestaurantesPage() {
   const router = useRouter();
   const { notify } = useToast();
-  const [restaurantes, setRestaurantes] = useState<Restaurante[]>([]);
-  const [loading, setLoading] = useState(true);
+  const {
+    data: restaurantes,
+    loading,
+    reload,
+    setData,
+  } = useAsyncList<Restaurante>((signal) => api.restaurantes.listarTodos(signal));
   const [confirmDelete, setConfirmDelete] = useState<{ id: string; nome: string } | null>(null);
-
-  const carregarRestaurantes = async () => {
-    setLoading(true);
-    try {
-      const dados = await api.restaurantes.listarTodos();
-      setRestaurantes(dados);
-    } catch (err) {
-      console.error(err);
-      notify(err instanceof Error ? err.message : 'Erro ao carregar', 'error');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    carregarRestaurantes();
-  }, []);
 
   const requestDelete = (id: string, nome: string) => {
     setConfirmDelete({ id, nome });
@@ -41,7 +29,7 @@ export default function RestaurantesPage() {
     const { id, nome } = confirmDelete;
     try {
       await api.restaurantes.deletar(id);
-      setRestaurantes((prev) => prev.filter((r) => r.id !== id));
+      setData((prev) => prev.filter((r) => r.id !== id));
       notify(`Restaurante "${nome}" excluido com sucesso`, 'success');
     } catch (err) {
       notify(err instanceof Error ? err.message : 'Erro ao excluir', 'error');
@@ -50,52 +38,36 @@ export default function RestaurantesPage() {
     }
   };
 
+  const stats = [
+    {
+      label: 'Total',
+      value: restaurantes.length,
+      icon: Building2,
+      color: 'bg-primary/10 text-primary',
+    },
+    {
+      label: 'Cidades',
+      value: new Set(restaurantes.map((r) => r.cidade)).size,
+      icon: MapPin,
+      color: 'bg-secondary/10 text-secondary',
+    },
+  ];
+
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="bg-surface rounded-2xl shadow-sm border border-border p-6">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div className="flex items-center gap-4">
-            <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-primary to-primary-dark flex items-center justify-center shadow-md">
-              <Building2 className="w-7 h-7 text-white" />
-            </div>
-            <div>
-              <h1 className="text-2xl font-bold text-text-primary">Restaurantes</h1>
-              <p className="text-text-secondary mt-0.5">Gerencie seus restaurantes e operações</p>
-            </div>
-          </div>
+      <CrudPageHeader
+        icon={Building2}
+        title="Restaurantes"
+        description="Gerencie seus restaurantes e operações"
+        accent="primary"
+        actions={
           <AdminOnly>
             <Button onClick={() => router.push('/restaurantes/novo')}>Novo Restaurante</Button>
           </AdminOnly>
-        </div>
+        }
+        stats={stats}
+      />
 
-        <div className="grid grid-cols-2 gap-4 mt-6 pt-6 border-t border-border">
-          <div className="flex items-center gap-3 p-4 bg-background rounded-xl">
-            <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
-              <Building2 className="w-5 h-5 text-primary" />
-            </div>
-            <div>
-              <p className="text-2xl font-bold text-text-primary">
-                {loading ? '-' : restaurantes.length}
-              </p>
-              <p className="text-sm text-text-secondary">Total</p>
-            </div>
-          </div>
-          <div className="flex items-center gap-3 p-4 bg-background rounded-xl">
-            <div className="w-10 h-10 rounded-lg bg-secondary/10 flex items-center justify-center">
-              <MapPin className="w-5 h-5 text-secondary" />
-            </div>
-            <div>
-              <p className="text-2xl font-bold text-text-primary">
-                {loading ? '-' : new Set(restaurantes.map((r) => r.cidade)).size}
-              </p>
-              <p className="text-sm text-text-secondary">Cidades</p>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Lista de Restaurantes */}
       <div className="bg-surface rounded-2xl shadow-sm border border-border overflow-hidden">
         <div className="overflow-x-auto">
           {restaurantes.length === 0 && !loading ? (
@@ -107,7 +79,7 @@ export default function RestaurantesPage() {
               <p className="text-text-secondary text-sm mb-6">
                 Comece adicionando seu primeiro restaurante
               </p>
-              <Button variant="secondary" onClick={carregarRestaurantes}>
+              <Button variant="secondary" onClick={reload}>
                 <RefreshCw className="w-4 h-4 mr-2" />
                 Atualizar Lista
               </Button>
@@ -116,19 +88,34 @@ export default function RestaurantesPage() {
             <table className="w-full">
               <thead className="bg-gradient-to-r from-background to-background/80 border-b border-border">
                 <tr>
-                  <th className="px-5 py-4 text-left text-xs font-semibold text-text-secondary uppercase tracking-wider">
+                  <th
+                    scope="col"
+                    className="px-5 py-4 text-left text-xs font-semibold text-text-secondary uppercase tracking-wider"
+                  >
                     Restaurante
                   </th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-text-secondary uppercase tracking-wider">
+                  <th
+                    scope="col"
+                    className="px-4 py-3 text-left text-xs font-semibold text-text-secondary uppercase tracking-wider"
+                  >
                     CNPJ
                   </th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-text-secondary uppercase tracking-wider">
+                  <th
+                    scope="col"
+                    className="px-4 py-3 text-left text-xs font-semibold text-text-secondary uppercase tracking-wider"
+                  >
                     Localização
                   </th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-text-secondary uppercase tracking-wider">
+                  <th
+                    scope="col"
+                    className="px-4 py-3 text-left text-xs font-semibold text-text-secondary uppercase tracking-wider"
+                  >
                     Horário
                   </th>
-                  <th className="px-4 py-3 text-right text-xs font-semibold text-text-secondary uppercase tracking-wider">
+                  <th
+                    scope="col"
+                    className="px-4 py-3 text-right text-xs font-semibold text-text-secondary uppercase tracking-wider"
+                  >
                     Ações
                   </th>
                 </tr>
@@ -162,24 +149,12 @@ export default function RestaurantesPage() {
                         : '-'}
                     </td>
                     <td className="px-4 py-4">
-                      <div className="flex justify-end gap-2 opacity-80 group-hover:opacity-100 transition-opacity">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => router.push(`/restaurantes/${restaurante.id}`)}
-                        >
-                          <Edit2 className="w-4 h-4" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => requestDelete(restaurante.id, restaurante.nome)}
-                          className="text-error hover:bg-error/10"
-                          aria-label={`Excluir restaurante ${restaurante.nome}`}
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </Button>
-                      </div>
+                      <RowActions
+                        editLabel={`Editar restaurante ${restaurante.nome}`}
+                        deleteLabel={`Excluir restaurante ${restaurante.nome}`}
+                        onEdit={() => router.push(`/restaurantes/${restaurante.id}`)}
+                        onDelete={() => requestDelete(restaurante.id, restaurante.nome)}
+                      />
                     </td>
                   </tr>
                 ))}
@@ -193,7 +168,7 @@ export default function RestaurantesPage() {
               {restaurantes.length} restaurante{restaurantes.length !== 1 ? 's' : ''} encontrado
               {restaurantes.length !== 1 ? 's' : ''}
             </p>
-            <Button variant="ghost" size="sm" onClick={carregarRestaurantes} loading={loading}>
+            <Button variant="ghost" size="sm" onClick={reload} loading={loading}>
               <RefreshCw className={`w-4 h-4 mr-1 ${loading ? 'animate-spin' : ''}`} />
               Atualizar
             </Button>

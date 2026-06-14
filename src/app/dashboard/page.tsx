@@ -1,8 +1,8 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { Users, Shield, Key, ArrowRight, RefreshCw, Building2 } from 'lucide-react';
+import { Users, Key, ArrowRight, RefreshCw, Building2, LayoutDashboard } from 'lucide-react';
 import { api } from '@/lib/api';
 import { Card } from '@/components/ui';
 
@@ -26,32 +26,35 @@ export default function DashboardPage() {
   // Renderiza placeholder no SSR e troca para a data real após o mount.
   const [hoje, setHoje] = useState<string>('');
 
-  const carregarStats = useCallback(async () => {
+  const carregarStats = async () => {
     setLoading(true);
     try {
+      // Usa /count (otimizado: 1 round-trip + 1 COUNT por entidade) em vez
+      // de buscar a lista completa e contar client-side. Em 4 domínios
+      // típicos, isso troca ~200KB de payload por ~50B.
       const [usuarios, perfis, permissoes, restaurantes] = await Promise.all([
-        api.usuarios.listarTodos().catch(() => []),
-        api.perfis.listarTodos().catch(() => []),
-        api.permissoes.listarTodos().catch(() => []),
-        api.restaurantes.listarTodos().catch(() => []),
+        api.usuarios.contar().catch(() => ({ total: 0 })),
+        api.perfis.contar().catch(() => ({ total: 0 })),
+        api.permissoes.contar().catch(() => ({ total: 0 })),
+        api.restaurantes.contar().catch(() => ({ total: 0 })),
       ]);
       setStats({
-        usuarios: usuarios.length,
-        perfis: perfis.length,
-        permissoes: permissoes.length,
-        restaurantes: restaurantes.length,
+        usuarios: usuarios.total,
+        perfis: perfis.total,
+        permissoes: permissoes.total,
+        restaurantes: restaurantes.total,
       });
     } catch (err) {
       console.error('Erro ao carregar estatísticas:', err);
     } finally {
       setLoading(false);
     }
-  }, []);
+  };
 
   useEffect(() => {
     carregarStats();
     setHoje(new Date().toLocaleDateString('pt-BR'));
-  }, [carregarStats]);
+  }, []);
 
   const statCards = [
     {
@@ -64,7 +67,7 @@ export default function DashboardPage() {
     {
       label: 'Perfis',
       value: stats.perfis,
-      icon: Shield,
+      icon: LayoutDashboard,
       href: '/dashboard/perfis',
       color: 'bg-secondary/10 text-secondary',
     },
@@ -90,7 +93,7 @@ export default function DashboardPage() {
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
           <div className="flex items-center gap-4">
             <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-primary to-primary-dark flex items-center justify-center shadow-md">
-              <Shield className="w-7 h-7 text-white" />
+              <LayoutDashboard className="w-7 h-7 text-white" />
             </div>
             <div>
               <h1 className="text-2xl font-bold text-text-primary">Dashboard</h1>
@@ -158,7 +161,7 @@ export default function DashboardPage() {
               className="flex items-center gap-3 p-3 rounded-lg hover:bg-background transition-colors"
             >
               <div className="p-2 bg-secondary/10 rounded-lg">
-                <Shield className="w-4 h-4 text-secondary" />
+                <LayoutDashboard className="w-4 h-4 text-secondary" />
               </div>
               <div className="flex-1">
                 <p className="font-medium text-text-primary">Gerenciar Perfis</p>

@@ -58,7 +58,7 @@ export default function NotFound() {
             </Link>
             <button
               onClick={() => window.history.back()}
-              className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-surface border border-border text-text-primary font-medium rounded-lg hover:bg-gray-50 transition-colors"
+              className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-surface border border-border text-text-primary font-medium rounded-lg hover:bg-background transition-colors"
             >
               <ArrowLeft size={18} aria-hidden="true" />
               Voltar

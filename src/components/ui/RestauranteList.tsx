@@ -105,22 +105,40 @@ export function RestauranteList({
             <table className="w-full">
               <thead className="bg-gradient-to-r from-background to-background/80 border-b border-border">
                 <tr>
-                  <th className="px-5 py-4 text-left text-xs font-semibold text-text-secondary uppercase tracking-wider">
+                  <th
+                    scope="col"
+                    className="px-5 py-4 text-left text-xs font-semibold text-text-secondary uppercase tracking-wider"
+                  >
                     Nome
                   </th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-text-secondary uppercase tracking-wider">
+                  <th
+                    scope="col"
+                    className="px-4 py-3 text-left text-xs font-semibold text-text-secondary uppercase tracking-wider"
+                  >
                     CNPJ
                   </th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-text-secondary uppercase tracking-wider">
+                  <th
+                    scope="col"
+                    className="px-4 py-3 text-left text-xs font-semibold text-text-secondary uppercase tracking-wider"
+                  >
                     Cidade
                   </th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-text-secondary uppercase tracking-wider">
+                  <th
+                    scope="col"
+                    className="px-4 py-3 text-left text-xs font-semibold text-text-secondary uppercase tracking-wider"
+                  >
                     Estado
                   </th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-text-secondary uppercase tracking-wider">
+                  <th
+                    scope="col"
+                    className="px-4 py-3 text-left text-xs font-semibold text-text-secondary uppercase tracking-wider"
+                  >
                     Horário
                   </th>
-                  <th className="px-4 py-3 text-right text-xs font-semibold text-text-secondary uppercase tracking-wider">
+                  <th
+                    scope="col"
+                    className="px-4 py-3 text-right text-xs font-semibold text-text-secondary uppercase tracking-wider"
+                  >
                     Ações
                   </th>
                 </tr>

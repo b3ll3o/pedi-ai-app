@@ -1,39 +1,27 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Button, Input, Modal, ConfirmDialog } from '@/components/ui';
+import { Button, Input, Modal, ConfirmDialog, CrudPageHeader, RowActions } from '@/components/ui';
 import { api, Perfil } from '@/lib/api';
-import { Shield, Plus, RefreshCw, Trash2, Edit2 } from 'lucide-react';
+import { useAsyncList } from '@/lib/hooks/useAsyncList';
+import { Shield, Plus, RefreshCw } from 'lucide-react';
 
 export default function PerfisPage() {
   const router = useRouter();
-  const [perfis, setPerfis] = useState<Perfil[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const {
+    data: perfis,
+    loading,
+    error,
+    reload,
+    setData,
+  } = useAsyncList<Perfil>((signal) => api.perfis.listarTodos(signal));
   const [showModal, setShowModal] = useState(false);
   const [novoNome, setNovoNome] = useState('');
   const [novaDescricao, setNovaDescricao] = useState('');
   const [creating, setCreating] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState<{ id: string; nome: string } | null>(null);
   const [deleting, setDeleting] = useState(false);
-
-  const carregarPerfis = async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      const dados = await api.perfis.listarTodos();
-      setPerfis(dados);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Erro ao carregar');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    carregarPerfis();
-  }, []);
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -45,9 +33,9 @@ export default function PerfisPage() {
       setNovoNome('');
       setNovaDescricao('');
       setShowModal(false);
-      await carregarPerfis();
+      await reload();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Erro ao criar');
+      console.error(err);
     } finally {
       setCreating(false);
     }
@@ -62,59 +50,45 @@ export default function PerfisPage() {
     setDeleting(true);
     try {
       await api.perfis.deletar(confirmDelete.id);
-      setPerfis((prev) => prev.filter((p) => p.id !== confirmDelete.id));
+      setData((prev) => prev.filter((p) => p.id !== confirmDelete.id));
       setConfirmDelete(null);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Erro ao excluir');
+      console.error(err);
     } finally {
       setDeleting(false);
     }
   };
 
+  const stats = [
+    {
+      label: 'Total',
+      value: perfis.length,
+      icon: Shield,
+      color: 'bg-secondary/10 text-secondary',
+    },
+    {
+      label: 'Permissões únicas',
+      value: new Set(perfis.flatMap((p) => p.permissoes || [])).size,
+      icon: Plus,
+      color: 'bg-primary/10 text-primary',
+    },
+  ];
+
   return (
     <div className="space-y-6">
-      <div className="bg-surface rounded-2xl shadow-sm border border-border p-6">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div className="flex items-center gap-4">
-            <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-secondary to-secondary-dark flex items-center justify-center shadow-md">
-              <Shield className="w-7 h-7 text-white" />
-            </div>
-            <div>
-              <h1 className="text-2xl font-bold text-text-primary">Perfis</h1>
-              <p className="text-text-secondary mt-0.5">Gerencie perfis de acesso</p>
-            </div>
-          </div>
+      <CrudPageHeader
+        icon={Shield}
+        title="Perfis"
+        description="Gerencie perfis de acesso"
+        accent="secondary"
+        actions={
           <Button onClick={() => setShowModal(true)}>
             <Plus className="w-5 h-5 mr-2" />
             Novo Perfil
           </Button>
-        </div>
-
-        <div className="grid grid-cols-2 gap-4 mt-6 pt-6 border-t border-border">
-          <div className="flex items-center gap-3 p-4 bg-background rounded-xl">
-            <div className="w-10 h-10 rounded-lg bg-secondary/10 flex items-center justify-center">
-              <Shield className="w-5 h-5 text-secondary" />
-            </div>
-            <div>
-              <p className="text-2xl font-bold text-text-primary">
-                {loading ? '-' : perfis.length}
-              </p>
-              <p className="text-sm text-text-secondary">Total</p>
-            </div>
-          </div>
-          <div className="flex items-center gap-3 p-4 bg-background rounded-xl">
-            <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
-              <Plus className="w-5 h-5 text-primary" />
-            </div>
-            <div>
-              <p className="text-2xl font-bold text-text-primary">
-                {loading ? '-' : new Set(perfis.flatMap((p) => p.permissoes || [])).size}
-              </p>
-              <p className="text-sm text-text-secondary">Permissões únicas</p>
-            </div>
-          </div>
-        </div>
-      </div>
+        }
+        stats={stats}
+      />
 
       {error && (
         <div className="bg-error/10 border border-error/20 text-error px-4 py-3 rounded-xl flex items-center gap-3">
@@ -170,7 +144,7 @@ export default function PerfisPage() {
               <p className="text-text-secondary text-sm mb-6">
                 Comece adicionando seu primeiro perfil
               </p>
-              <Button variant="secondary" onClick={carregarPerfis}>
+              <Button variant="secondary" onClick={reload}>
                 <RefreshCw className="w-4 h-4 mr-2" />
                 Atualizar Lista
               </Button>
@@ -179,16 +153,28 @@ export default function PerfisPage() {
             <table className="w-full">
               <thead className="bg-gradient-to-r from-background to-background/80 border-b border-border">
                 <tr>
-                  <th className="px-5 py-4 text-left text-xs font-semibold text-text-secondary uppercase tracking-wider">
+                  <th
+                    scope="col"
+                    className="px-5 py-4 text-left text-xs font-semibold text-text-secondary uppercase tracking-wider"
+                  >
                     Nome
                   </th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-text-secondary uppercase tracking-wider">
+                  <th
+                    scope="col"
+                    className="px-4 py-3 text-left text-xs font-semibold text-text-secondary uppercase tracking-wider"
+                  >
                     Descrição
                   </th>
-                  <th className="px-4 py-3 text-center text-xs font-semibold text-text-secondary uppercase tracking-wider">
+                  <th
+                    scope="col"
+                    className="px-4 py-3 text-center text-xs font-semibold text-text-secondary uppercase tracking-wider"
+                  >
                     Permissões
                   </th>
-                  <th className="px-4 py-3 text-right text-xs font-semibold text-text-secondary uppercase tracking-wider">
+                  <th
+                    scope="col"
+                    className="px-4 py-3 text-right text-xs font-semibold text-text-secondary uppercase tracking-wider"
+                  >
                     Ações
                   </th>
                 </tr>
@@ -218,25 +204,12 @@ export default function PerfisPage() {
                       </span>
                     </td>
                     <td className="px-4 py-4">
-                      <div className="flex justify-end gap-2 opacity-80 group-hover:opacity-100 transition-opacity">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => router.push(`/dashboard/perfis/${perfil.id}`)}
-                          aria-label={`Editar perfil ${perfil.nome}`}
-                        >
-                          <Edit2 className="w-4 h-4" aria-hidden="true" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handleDelete(perfil.id, perfil.nome)}
-                          className="text-error hover:bg-error/10"
-                          aria-label={`Excluir perfil ${perfil.nome}`}
-                        >
-                          <Trash2 className="w-4 h-4" aria-hidden="true" />
-                        </Button>
-                      </div>
+                      <RowActions
+                        editLabel={`Editar perfil ${perfil.nome}`}
+                        deleteLabel={`Excluir perfil ${perfil.nome}`}
+                        onEdit={() => router.push(`/dashboard/perfis/${perfil.id}`)}
+                        onDelete={() => handleDelete(perfil.id, perfil.nome)}
+                      />
                     </td>
                   </tr>
                 ))}
@@ -250,7 +223,7 @@ export default function PerfisPage() {
               {perfis.length} perfil{perfis.length !== 1 ? 's' : ''} encontrado
               {perfis.length !== 1 ? 's' : ''}
             </p>
-            <Button variant="ghost" size="sm" onClick={carregarPerfis} loading={loading}>
+            <Button variant="ghost" size="sm" onClick={reload} loading={loading}>
               <RefreshCw className={`w-4 h-4 mr-1 ${loading ? 'animate-spin' : ''}`} />
               Atualizar
             </Button>

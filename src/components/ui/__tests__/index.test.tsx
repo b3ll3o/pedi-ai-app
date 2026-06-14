@@ -1,6 +1,17 @@
 import React from 'react';
 import { render, screen } from '@testing-library/react';
-import { Button, Badge, Card, StatusBadge, Input, Table, TableRow } from '../index';
+import {
+  Button,
+  Badge,
+  Card,
+  StatusBadge,
+  Input,
+  Table,
+  TableRow,
+  CrudPageHeader,
+  RowActions,
+} from '../index';
+import { Users } from 'lucide-react';
 
 describe('UI Components Index', () => {
   it('exports Button', () => {
@@ -50,5 +61,18 @@ describe('UI Components Index', () => {
       </table>,
     );
     expect(screen.getByRole('row')).toBeInTheDocument();
+  });
+
+  it('exports CrudPageHeader', () => {
+    render(<CrudPageHeader icon={Users} title="Users" description="Manage users" />);
+    expect(screen.getByRole('heading', { level: 1, name: 'Users' })).toBeInTheDocument();
+  });
+
+  it('exports RowActions', () => {
+    render(
+      <RowActions editLabel="Edit" deleteLabel="Delete" onEdit={() => {}} onDelete={() => {}} />,
+    );
+    expect(screen.getByRole('button', { name: 'Edit' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Delete' })).toBeInTheDocument();
   });
 });

@@ -1,5 +1,10 @@
-import { DashboardLayout } from '@/components/dashboard/DashboardLayout';
+import { SidebarProvider } from '@/components/dashboard/SidebarContext';
+import { AuthenticatedLayout } from '@/components/auth/AuthenticatedLayout';
 
 export default function Layout({ children }: { children: React.ReactNode }) {
-  return <DashboardLayout>{children}</DashboardLayout>;
+  return (
+    <SidebarProvider>
+      <AuthenticatedLayout>{children}</AuthenticatedLayout>
+    </SidebarProvider>
+  );
 }

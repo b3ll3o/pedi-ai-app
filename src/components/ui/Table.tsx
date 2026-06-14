@@ -14,6 +14,7 @@ export function Table({ headers, children, className = '' }: TableProps) {
               {headers.map((header, index) => (
                 <th
                   key={index}
+                  scope="col"
                   className="px-4 py-3 text-left text-sm font-semibold text-text-primary"
                 >
                   {header}

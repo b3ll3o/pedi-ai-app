@@ -33,7 +33,9 @@ function MenuItem({ href, label, icon: Icon }: MenuItemProps) {
         href={href}
         aria-current={isActive ? 'page' : undefined}
         className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
-          isActive ? 'bg-primary text-white' : 'text-gray-300 hover:bg-primary hover:text-white'
+          isActive
+            ? 'bg-primary text-white'
+            : 'text-white/70 hover:bg-secondary-light hover:text-white'
         }`}
       >
         <Icon className="w-5 h-5" aria-hidden={true} />
@@ -86,6 +88,7 @@ export function Sidebar() {
             onClick={handleLogout}
             className="flex flex-col items-center gap-1 px-2 py-2 rounded-lg text-text-secondary hover:text-error transition-colors"
             title="Sair"
+            aria-label="Sair"
           >
             <LogOut className="w-5 h-5" aria-hidden="true" />
             <span className="text-xs font-medium">Sair</span>
@@ -98,7 +101,7 @@ export function Sidebar() {
         <div className="p-4 border-b border-secondary-light flex items-center justify-between">
           <div>
             <h1 className="text-xl font-bold">Pedi-AI</h1>
-            <p className="text-sm text-gray-400">Gestão</p>
+            <p className="text-sm text-white/60">Gestão</p>
           </div>
         </div>
 
@@ -123,15 +126,16 @@ export function Sidebar() {
               </div>
               <div>
                 <p className="font-medium text-sm">{user?.nome || 'Usuário'}</p>
-                <p className="text-xs text-gray-400">{user?.email}</p>
+                <p className="text-xs text-white/60">{user?.email}</p>
               </div>
             </div>
             <button
               onClick={handleLogout}
-              className="p-2 text-gray-400 hover:text-white hover:bg-secondary-light rounded-lg transition-colors"
+              className="p-2 text-white/60 hover:text-white hover:bg-secondary-light rounded-lg transition-colors"
               title="Sair"
+              aria-label="Sair"
             >
-              <LogOut className="w-5 h-5" />
+              <LogOut className="w-5 h-5" aria-hidden="true" />
             </button>
           </div>
         </div>

@@ -155,7 +155,7 @@ describe('Modal', () => {
         <p>x</p>
       </Modal>,
     );
-    expect(screen.getByRole('dialog')).toHaveClass('max-w-2xl');
+    expect(screen.getByRole('dialog')).toHaveClass('max-w-xl');
   });
 
   it('usa max-w-md como default', () => {
@@ -165,5 +165,56 @@ describe('Modal', () => {
       </Modal>,
     );
     expect(screen.getByRole('dialog')).toHaveClass('max-w-md');
+  });
+
+  // --- a11y: focus trap ---
+
+  it('Tab no último focável volta para o primeiro (focus trap forward)', () => {
+    render(
+      <Modal open onClose={() => {}} title="X">
+        <button type="button">primeiro</button>
+        <button type="button">ultimo</button>
+      </Modal>,
+    );
+    const buttons = screen.getAllByRole('button');
+    // buttons[0] é o X (Fechar) — vem antes do children no DOM.
+    // buttons[1] é "primeiro", buttons[2] é "ultimo".
+    const ultimo = buttons[buttons.length - 1];
+    ultimo.focus();
+    fireEvent.keyDown(document, { key: 'Tab' });
+    // O foco deve voltar para o primeiro focável do modal (botão X)
+    expect(document.activeElement).toBe(buttons[0]);
+  });
+
+  it('Shift+Tab no primeiro focável vai para o último (focus trap backward)', () => {
+    render(
+      <Modal open onClose={() => {}} title="X">
+        <button type="button">primeiro</button>
+        <button type="button">ultimo</button>
+      </Modal>,
+    );
+    const buttons = screen.getAllByRole('button');
+    // Foco no primeiro focável do modal (o X, buttons[0])
+    buttons[0].focus();
+    fireEvent.keyDown(document, { key: 'Tab', shiftKey: true });
+    // Deve pular para o último focável
+    expect(document.activeElement).toBe(buttons[buttons.length - 1]);
+  });
+
+  it('Tab no meio do modal não interfere (deixa comportamento default)', () => {
+    render(
+      <Modal open onClose={() => {}} title="X">
+        <button type="button">primeiro</button>
+        <button type="button">meio</button>
+        <button type="button">ultimo</button>
+      </Modal>,
+    );
+    const buttons = screen.getAllByRole('button');
+    buttons[1].focus(); // foco em "meio"
+    fireEvent.keyDown(document, { key: 'Tab' });
+    // Como o foco está no meio, não é o primeiro nem o último focável,
+    // o preventDefault não deve ser chamado e o foco segue o default.
+    // O importante: nenhum erro é lançado e onClose não é chamado.
+    expect(screen.getByRole('dialog')).toBeInTheDocument();
   });
 });

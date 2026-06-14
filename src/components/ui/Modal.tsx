@@ -18,7 +18,7 @@ const sizeMap: Record<NonNullable<ModalProps['size']>, string> = {
   sm: 'max-w-sm',
   md: 'max-w-md',
   lg: 'max-w-lg',
-  xl: 'max-w-2xl',
+  xl: 'max-w-xl',
 };
 
 /**
@@ -38,7 +38,30 @@ export function Modal({ open, onClose, title, titleId, children, size = 'md' }: 
     if (!open) return;
 
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose();
+      if (e.key === 'Escape') {
+        onClose();
+        return;
+      }
+      // Focus trap: ao pressionar Tab dentro do modal, mantém o foco dentro
+      // dos elementos focáveis do diálogo. Sem isso, Tab pode escapar para
+      // elementos do background (ex: a sidebar do dashboard), quebrando a
+      // navegação por teclado para usuários que dependem de leitor de tela.
+      if (e.key === 'Tab') {
+        const focusables = containerRef.current?.querySelectorAll<HTMLElement>(
+          'input, textarea, select, button, [tabindex]:not([tabindex="-1"]), a[href]',
+        );
+        if (!focusables || focusables.length === 0) return;
+        const first = focusables[0];
+        const last = focusables[focusables.length - 1];
+        const active = document.activeElement;
+        if (e.shiftKey && active === first) {
+          e.preventDefault();
+          last.focus();
+        } else if (!e.shiftKey && active === last) {
+          e.preventDefault();
+          first.focus();
+        }
+      }
     };
     document.addEventListener('keydown', onKey);
 
@@ -48,7 +71,7 @@ export function Modal({ open, onClose, title, titleId, children, size = 'md' }: 
 
     // Foco no primeiro elemento focável
     const focusable = containerRef.current?.querySelector<HTMLElement>(
-      'input, textarea, select, button, [tabindex]:not([tabindex="-1"])',
+      'input, textarea, select, button, [tabindex]:not([tabindex="-1"]), a[href]',
     );
     focusable?.focus();
 
