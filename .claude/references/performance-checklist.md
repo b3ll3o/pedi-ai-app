@@ -48,7 +48,7 @@ description: Checklist de performance para backend e frontend. Carregue quando p
 ### Core Web Vitals (Mobile, 4G)
 
 | Métrica | Bom | Onde Medir |
-|---------|-----|------------|
+| --- | --- | --- |
 | **LCP** (Largest Contentful Paint) | < 2.5s | Lighthouse, Web Vitals |
 | **INP** (Interaction to Next Paint) | < 200ms | Web Vitals |
 | **CLS** (Cumulative Layout Shift) | < 0.1 | Web Vitals |
@@ -84,6 +84,7 @@ description: Checklist de performance para backend e frontend. Carregue quando p
 - [ ] `dynamic(() => import(...))` em rotas/componentes raramente usados
 - [ ] `useMemo` / `useCallback` em hot path (após medir)
 - [ ] Virtual list em lista > 50 itens (`react-window`)
+- [ ] Dashboards/KPI usam `api.<recurso>.contar()` (`GET /<recurso>/count`) em vez de `listarTodos().length` — evita baixar lista inteira só para mostrar contador
 
 ### Network
 
@@ -105,17 +106,19 @@ description: Checklist de performance para backend e frontend. Carregue quando p
 
 - [ ] Server Component renderiza o máximo possível
 - [ ] Client Component mínimo necessário
-- [ ] Sem hidratação com fetch em `useEffect` (usar Server Component)
+- [ ] Sem hidratação com fetch em `useEffect` (usar Server Component ou hook `useAsyncList` com `AbortController`)
+- [ ] `AuthProvider` usa `AbortController` no `fetch('/auth/me')` do boot — cancela se componente desmonta antes da resposta
 
 ## Anti-Patterns
 
 | Anti-pattern | Impacto | Correção |
-|--------------|---------|----------|
+| --- | --- | --- |
 | Imagem sem `width`/`height` | CLS alto | Sempre dimensions explícitas |
 | Fetch em `useEffect` na raiz | TTFB + LCP alto | Server Component ou SWR/React Query |
 | `useState` para tudo | Re-renders | Context, Zustand, ou Server |
 | Loop com DB | N+1 queries | `where: { id: { in: ids } }` |
 | Sem paginação | Memória + latência | `take` + `skip` |
+| Lista inteira para mostrar contador | Payload + parse | `GET /<recurso>/count` (`api.<recurso>.contar()`) |
 | Bundle único grande | TTI alto | Code split, dynamic import |
 | `<img>` em vez de `next/image` | LCP alto | `next/image` |
 | Fonte externa | FOUT | `next/font` self-hosted |

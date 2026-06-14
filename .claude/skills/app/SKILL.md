@@ -80,13 +80,17 @@ src/
 ## Componentes UI Compartilhados
 
 | Componente | Props principais | Uso |
-|------------|------------------|-----|
+| --- | --- | --- |
 | `Button` | `variant: primary \| secondary \| ghost \| danger`, `size: sm \| md \| lg`, `loading`, `disabled` | Ações |
-| `Input` | `name`, `label?`, `type: text \| email \| password \| number`, `error?`, `placeholder` | Campos de form |
+| `Input` | `name`, `label?`, `type: text \| email \| password \| number`, `error?`, `hint?`, `placeholder` | Campos de form (a11y: `aria-invalid` + `aria-describedby` + `role="alert"`) |
 | `Card` | `children`, `className?` | Containers |
 | `Badge` | `children`, `className?` | Tags |
 | `StatusBadge` | `status: string` | Status colorido |
 | `Table` | `columns: [{ key, label }]`, `data`, `onRowClick?` | Listas tabulares |
+| `Modal` | `open`, `onClose`, `title`, `titleId?`, `children`, `size?` | Diálogos acessíveis: focus trap, `role="dialog"`, `aria-modal`, ESC, click-out, body scroll travado |
+| `ConfirmDialog` | `open`, `title`, `message`, `onConfirm`, `onCancel`, `variant?` | Confirmação destrutiva com Modal |
+| `CrudPageHeader` | `icon`, `title`, `description`, `accent?`, `actions?`, `stats?` | Header padronizado para CRUDs com cards de KPI (alimentados por `api.<recurso>.contar()`) |
+| `RowActions` | `items: Action[]`, `onAction(key)` | Botões de ação por linha (editar/deletar) |
 
 ## Design Tokens
 
@@ -140,6 +144,10 @@ src/
 - [ ] Lighthouse Performance ≥ 90
 - [ ] Lighthouse Accessibility ≥ 95
 - [ ] Landing page renderiza com meta tags e Open Graph
-- [ ] Navegação por teclado funcional (Tab, Enter, Esc)
+- [ ] Navegação por teclado funcional (Tab, Enter, Esc, Shift+Tab)
 - [ ] Sem `console.log` em build de produção
 - [ ] `next/image` em todas as imagens
+- [ ] `<Input>` com `aria-invalid` em erro (anunciável por NVDA/JAWS)
+- [ ] `<Modal>` com focus trap + `role="dialog"` + `aria-modal`
+- [ ] `<CrudPageHeader>` com `aria-hidden` nos ícones decorativos
+- [ ] Páginas de gestão usam `api.<recurso>.contar()` para KPI (não `listarTodos().length`)

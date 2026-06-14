@@ -134,6 +134,9 @@ server {
 - OOM killer no journal: `journalctl -u pedi-ai-app --no-pager` mostra `Out of memory`
 - Workflow `ci-deploy.yml` não detecta standalone mode
 - SSL usando RSA em vez de ECC (mais lento, mais memória)
+- `proxy.ts` matcher não cobrindo `/dashboard/:path*` e `/restaurantes/:path*` (rotas desprotegidas)
+- Server route `/api/auth/login` sem `Set-Cookie HttpOnly` no refresh (XSS de 7 dias)
+- Server route `/api/auth/logout` sem `Set-Cookie max-age=0` para limpar cookies (logout incompleto)
 
 ## Verificação
 
@@ -147,3 +150,5 @@ server {
 - [ ] `nginx -t` → syntax ok
 - [ ] Renovação SSL: `certbot renew --dry-run`
 - [ ] `ls -la /root/pedi-ai-app/.next/standalone/server.js` → existe
+- [ ] `curl -I https://andreazzi.tech/dashboard` sem cookie → 307/302 para `/login`
+- [ ] Cookie `pedi_auth_refresh_token` no response de login tem flag `HttpOnly` (verificar com `curl -i` e checar `Set-Cookie`)

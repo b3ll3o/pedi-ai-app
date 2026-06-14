@@ -122,34 +122,52 @@ PediAI busca **WCAG 2.1 AA** no mínimo. Esta checklist cobre os pontos mais imp
 </Button>
 ```
 
-### Input
+### Input (com ARIA automático)
 
 ```tsx
-// ✅ Certo
-<div>
-  <label htmlFor="email">Email</label>
-  <input
-    id="email"
-    type="email"
-    aria-describedby="email-help"
-    aria-invalid={hasError}
-  />
-  <span id="email-help">Use seu email de cadastro</span>
-</div>
+// ✅ Certo — Input emite aria-invalid + aria-describedby + role="alert" no erro
+<Input
+  name="email"
+  label="Email"
+  type="email"
+  error={errors.email}      // ativa aria-invalid + <span role="alert">
+  hint="Use seu email de cadastro"  // ativa aria-describedby para o hint
+/>
+
+// ❌ Errado — não usar <input> HTML cru, perde a11y
+<input type="email" />
 ```
 
-### Modal
+### Modal (com focus trap + ARIA dialog)
 
 ```tsx
-// ✅ Certo
-<dialog
-  role="dialog"
-  aria-modal="true"
-  aria-labelledby="modal-title"
+// ✅ Certo — Modal implementa focus trap, ESC, click-out, body scroll travado
+<Modal
+  open={open}
+  onClose={() => setOpen(false)}
+  title="Confirmar exclusão"
+  titleId="confirm-delete-title"
 >
-  <h2 id="modal-title">Confirmar exclusão</h2>
-  ...
-</dialog>
+  <p>Tem certeza?</p>
+  <Button onClick={onConfirm}>Excluir</Button>
+</Modal>
+
+// ❌ Errado — <dialog> HTML cru sem focus trap vaza Tab para a sidebar
+<div className="modal">{...}</div>
+```
+
+### CrudPageHeader (header de página com KPI)
+
+```tsx
+// ✅ Certo — ícones decorativos com aria-hidden, valor é texto
+<CrudPageHeader
+  icon={Shield}
+  title="Perfis"
+  description="Gerencie perfis de acesso"
+  accent="secondary"
+  actions={<Button>Novo Perfil</Button>}
+  stats={[{ label: 'Total', value: 12, icon: Shield, color: 'bg-secondary/10 text-secondary' }]}
+/>
 ```
 
 ### Toast / Notificação
@@ -169,7 +187,7 @@ PediAI busca **WCAG 2.1 AA** no mínimo. Esta checklist cobre os pontos mais imp
 ## Ferramentas de Auditoria
 
 | Ferramenta | Tipo | Uso |
-|------------|------|-----|
+| --- | --- | --- |
 | **Lighthouse** | Browser | Auditoria automatizada (A11y ≥ 95) |
 | **axe DevTools** | Extensão | Análise detalhada de violations |
 | **WAVE** | Extensão | Visualização de issues |

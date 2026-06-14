@@ -66,19 +66,24 @@ description: Checklist de segurança OWASP + PediAI. Carregue quando persona `se
 ### A07 — Auth Failures
 
 - [ ] Rate limiting em `POST /auth/login` (5/60s default)
-- [ ] Refresh token rotation implementado
-- [ ] Logout invalida refresh token server-side
+- [ ] Refresh token rotation implementado (server route `/api/auth/refresh` rotaciona o cookie httpOnly a cada refresh)
+- [ ] Logout invalida refresh token **e persiste o `jti` do access token em `revoked_jtis`** (backend)
 - [ ] Access token TTL ≤ 15 min
 - [ ] Refresh token TTL ≤ 7 dias
 - [ ] Tentativas falhas de login logadas (sem expor senha)
 - [ ] Senha mínima de 8 caracteres
 - [ ] Política de complexidade ou HIBP check
+- [ ] Refresh token em cookie **httpOnly** (defesa XSS), nunca em localStorage
+- [ ] Server route `/api/auth/login` seta `Set-Cookie` com flag `HttpOnly` para o refresh
+- [ ] Server route `/api/auth/logout` faz `Set-Cookie max-age=0` para limpar ambos os cookies
 
 ### A08 — Software/Data Integrity
 
-- [ ] Validar `alg` do JWT (nunca `none`)
-- [ ] Validar assinatura do JWT
+- [ ] Validar `alg` do JWT (nunca `none`) — `algorithms: ['HS256']` no `passport-jwt` do backend
+- [ ] Validar assinatura do JWT (responsabilidade do backend; `proxy.ts` no app só valida formato + `exp`)
 - [ ] Validar `iss`, `aud`, `exp` quando aplicável
+- [ ] `jti` presente no payload (necessário para revogação por logout via `revoked_jtis` no backend)
+- [ ] `proxy.ts` (no app) faz validação estrutural inline antes do backend (formato + `exp`)
 - [ ] Sem deserialização de dados não-confiáveis
 - [ ] Migrations Prisma revisadas antes de aplicar em prod
 
@@ -108,11 +113,15 @@ Apenas 4 endpoints públicos (todos os outros exigem JWT):
 ## PediAI — Cookies (pedi-ai-app)
 
 | Cookie | httpOnly | secure | sameSite | Por quê |
-|--------|----------|--------|----------|---------|
-| `pedi_auth_access_token` (proxy) | **false** | true (prod) | Lax | Lido server-side pelo proxy |
-| localStorage tokens | - | - | - | Lido client-side pelo AuthProvider |
+| --- | --- | --- | --- | --- |
+| `pedi_auth_access_token` (proxy) | false | true (prod) | Lax | Lido server-side pelo `src/proxy.ts` para validar JWT inline (formato + `exp`) |
+| `pedi_auth_refresh_token` (server route) | **true** | true (prod) | Lax | Defesa contra XSS: o browser recusa expor este cookie a JS; TTL 7 dias |
+| localStorage `pedi_auth_access_token` | - | - | - | Mantido para uso client-side pelo AuthProvider (espelha o cookie para o header `Authorization: Bearer`) |
+| localStorage `pedi_auth_user` | - | - | - | Cache do user para evitar fetch em `/auth/me` no boot |
 
-**Atenção:** `httpOnly: false` é **exceção documentada** por causa do proxy server-side. Em outros contextos, sempre `httpOnly: true`.
+**Atenção:** o `httpOnly: false` no cookie do access token é a configuração atual (necessária para o proxy server-side). O `proxy.ts` valida o JWT inline (formato + `exp`) antes de liberar render, mas a validação de assinatura é responsabilidade do backend. Em outros contextos sem proxy, mantenha `httpOnly: true`.
+
+**Atenção 2:** o refresh token **NÃO** é persistido em localStorage. Versões anteriores guardavam; o `clearAuthStorage()` em `auth-context.tsx` remove a chave legacy `pedi_auth_refresh_token` na próxima hidratação para evitar reutilização.
 
 ## Checklist Pré-Deploy
 
